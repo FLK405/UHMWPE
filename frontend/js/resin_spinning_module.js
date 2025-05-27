@@ -98,7 +98,25 @@ function getResinSpinningModuleHTML() {
                     <div><label for="rsDrawingRatio" class="form-label">拉伸倍数</label><input type="number" step="any" id="rsDrawingRatio" name="draw_ratio" class="form-input"></div>
                     <div><label for="rsHeatTreatmentTemperature" class="form-label">热处理温度 (°C)</label><input type="number" step="any" id="rsHeatTreatmentTemperature" name="heat_treatment_temperature_c" class="form-input"></div>
                     <div><label for="rsRemarks" class="form-label">备注</label><textarea id="rsRemarks" name="remarks" class="form-input" rows="3"></textarea></div>
-                    <div class="flex justify-end space-x-3 pt-4">
+                    
+                    <!-- Attachment Section - Visible in Edit Mode -->
+                    <div id="rsAttachmentSection" class="mt-6 pt-6 border-t border-gray-200 hidden col-span-1 md:col-span-2">
+                        <h3 class="text-xl font-semibold text-gray-700 mb-3">附件管理</h3>
+                        <div id="rsExistingAttachmentsList" class="space-y-2 mb-4 max-h-48 overflow-y-auto">
+                            <!-- Existing attachments will be listed here -->
+                        </div>
+                        <div>
+                            <label for="rsAttachmentFile" class="form-label">上传新附件:</label>
+                            <input type="file" id="rsAttachmentFile" class="form-input w-full mt-1 text-sm p-2 border">
+                        </div>
+                        <button type="button" id="rsUploadAttachmentBtn" class="action-button bg-orange-500 hover:bg-orange-600 text-sm mt-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-4 w-4 mr-1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16.5V9.75m0 0l3 3m-3-3l-3 3M6.75 19.5a4.5 4.5 0 01-1.41-8.775 5.25 5.25 0 0110.338 0 4.5 4.5 0 01-1.41 8.775H6.75z" /></svg>
+                            上传选中文件
+                        </button>
+                        <div id="rsAttachmentFeedback" class="text-sm mt-2"></div>
+                    </div>
+
+                    <div class="flex justify-end space-x-3 pt-4 col-span-1 md:col-span-2">
                         <button type="button" id="cancelResinSpinningFormBtn" class="action-button bg-gray-500 hover:bg-gray-600">取消</button>
                         <button type="submit" id="saveResinSpinningBtn" class="action-button">保存</button>
                     </div>
@@ -279,6 +297,15 @@ function openResinSpinningModal(recordId = null) {
     const modal = document.getElementById('resinSpinningModal');
     const form = document.getElementById('resinSpinningForm');
     const modalTitle = document.getElementById('resinSpinningModalTitle');
+    const attachmentSection = document.getElementById('rsAttachmentSection');
+    const existingAttachmentsList = document.getElementById('rsExistingAttachmentsList');
+    const attachmentFileInput = document.getElementById('rsAttachmentFile');
+    const attachmentFeedback = document.getElementById('rsAttachmentFeedback');
+
+    if (attachmentSection) attachmentSection.classList.add('hidden');
+    if (existingAttachmentsList) existingAttachmentsList.innerHTML = '';
+    if (attachmentFileInput) attachmentFileInput.value = '';
+    if (attachmentFeedback) attachmentFeedback.textContent = '';
     
     form.reset(); 
     document.getElementById('resinSpinningRecordId').value = '';
@@ -314,6 +341,10 @@ function openResinSpinningModal(recordId = null) {
                     document.getElementById('rsDrawingRatio').value = record.draw_ratio;
                     document.getElementById('rsHeatTreatmentTemperature').value = record.heat_treatment_temperature_c;
                     document.getElementById('rsRemarks').value = record.remarks || '';
+
+                    if (attachmentSection) attachmentSection.classList.remove('hidden');
+                    loadResinSpinningAttachments(recordId);
+
                 } else {
                     throw new Error(data.message || "未能加载记录。");
                 }
@@ -333,6 +364,10 @@ function openResinSpinningModal(recordId = null) {
 function closeResinSpinningModal() {
     const modal = document.getElementById('resinSpinningModal');
     if(modal) modal.classList.add('hidden');
+    const attachmentFileInput = document.getElementById('rsAttachmentFile');
+    const attachmentFeedback = document.getElementById('rsAttachmentFeedback');
+    if (attachmentFileInput) attachmentFileInput.value = '';
+    if (attachmentFeedback) attachmentFeedback.textContent = '';
 }
 
 async function handleSaveResinSpinning(event) {
@@ -458,6 +493,10 @@ function initializeResinSpinningModuleEventListeners() {
     document.getElementById('resinSpinningForm')?.addEventListener('submit', handleSaveResinSpinning);
     document.getElementById('closeResinSpinningModalBtn')?.addEventListener('click', closeResinSpinningModal);
     document.getElementById('cancelResinSpinningFormBtn')?.addEventListener('click', closeResinSpinningModal);
+
+    // Import Modal
+    document.getElementById('closeResinSpinningImportModalBtn')?.addEventListener('click', closeResinSpinningImportModal);
+    document.getElementById('uploadResinSpinningImportBtn')?.addEventListener('click', handleResinSpinningFileUpload);
 
     // Import Modal
     document.getElementById('closeResinSpinningImportModalBtn')?.addEventListener('click', closeResinSpinningImportModal);
