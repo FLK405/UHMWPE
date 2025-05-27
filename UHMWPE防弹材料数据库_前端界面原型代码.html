@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-TF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UHMWPE防弹材料数据库 - 主页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        /* 自定义滚动条样式 (可选) */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        .sidebar-link {
+            @apply block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md transition-colors duration-150;
+        }
+        .sidebar-link.active {
+            @apply bg-blue-600 text-white;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+        <aside class="w-64 bg-white shadow-md overflow-y-auto p-4 space-y-2">
+            <div class="text-2xl font-bold text-blue-600 mb-6 text-center">
+                材料数据库
+            </div>
+            <nav>
+                <button class="sidebar-link active" data-module="home">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>
+                    首页
+                </button>
+                <button class="sidebar-link" data-module="resin_spinning">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm2 11a1 1 0 100-2 1 1 0 000 2zM13 4a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V4zm2 11a1 1 0 100-2 1 1 0 000 2zM9 8a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 01-1-1V8z" clip-rule="evenodd" /></svg>
+                    前端树脂与纺丝工艺
+                </button>
+                <button class="sidebar-link" data-module="fiber_performance">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" /></svg>
+                    纤维性能
+                </button>
+                <button class="sidebar-link" data-module="microstructure">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-13a1 1 0 10-2 0v.093a4.973 4.973 0 00-1.659.91A1 1 0 108.75 7.25a3 3 0 115.5 0 1 1 0 00.707.707 4.973 4.973 0 00.91-1.659V5a1 1 0 10-2 0v.75a3 3 0 01-5.5 0V5z" clip-rule="evenodd" /></svg>
+                    微观结构特征
+                </button>
+                <button class="sidebar-link" data-module="resin_interface">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    树脂及界面性能
+                </button>
+                <button class="sidebar-link" data-module="composite_performance">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M10.394 2.08a1 1 0 00-.788 0l-7 3a1 1 0 000 1.84L9 9.61V16a1 1 0 001 1h2a1 1 0 001-1v-6.39l6.394-2.69a1 1 0 000-1.84l-7-3zM10 8.39L3.606 5.69 10 3.154 16.394 5.69 10 8.39z" /></svg>
+                    复合材料结构与性能
+                </button>
+                <button class="sidebar-link" data-module="ballistic_performance">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                    终端产品防弹性能
+                </button>
+                <button class="sidebar-link" data-module="literature_standard">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 16c1.255 0 2.443-.29 3.5-.804V4.804zM14.5 4A7.969 7.969 0 0011 4.804v10A7.968 7.968 0 0114.5 16c1.255 0 2.443-.29 3.5-.804v-10A7.968 7.968 0 0014.5 4z" /></svg>
+                    文献与标准
+                </button>
+                 <hr class="my-2">
+                <button class="sidebar-link" data-module="user_management">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-6-3a2 2 0 11-4 0 2 2 0 014 0zm-2 4a5 5 0 00-4.546 2.916A5.986 5.986 0 0010 16a5.986 5.986 0 004.546-2.084A5 5 0 0012 11z" clip-rule="evenodd" /></svg>
+                    用户管理 (管理员)
+                </button>
+                <button class="sidebar-link" data-module="system_guide">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    系统使用说明
+                </button>
+            </nav>
+        </aside>
+
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white shadow-sm p-4">
+                <div class="flex justify-between items-center">
+                    <div class="relative w-full max-w-md">
+                        <input type="search" id="mainSearch" placeholder="搜索材料牌号、性能参数、文献..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-gray-600">欢迎, <span id="username" class="font-medium">管理员</span></span>
+                        <button id="logoutButton" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-150 text-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" /></svg>
+                            退出
+                        </button>
+                    </div>
+                </div>
+            </header>
+
+            <div id="contentArea" class="flex-1 p-6 overflow-y-auto bg-gray-50">
+                <div class="bg-white p-8 rounded-lg shadow">
+                    <h1 class="text-3xl font-bold text-gray-800 mb-4">欢迎使用UHMWPE防弹材料数据库</h1>
+                    <p class="text-gray-600 mb-6">
+                        请从左侧导航栏选择一个模块开始浏览或管理数据。本数据库旨在系统整合UHMWPE纤维、树脂、复合材料及其制品的性能数据，特别是防弹性能数据，为材料研发、性能预测、质量监控及应用推广提供数据支持和技术支撑。
+                    </p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div class="bg-blue-50 p-6 rounded-lg shadow-sm hover:shadow-lg transition-shadow">
+                            <h2 class="text-xl font-semibold text-blue-700 mb-2">纤维性能数据</h2>
+                            <p class="text-blue-600 text-sm">管理和查询UHMWPE纤维的物理、化学、力学及热性能数据。</p>
+                            <p class="mt-3 text-3xl font-bold text-blue-500" id="fiberDataCount">1234 条</p>
+                        </div>
+                        <div class="bg-green-50 p-6 rounded-lg shadow-sm hover:shadow-lg transition-shadow">
+                            <h2 class="text-xl font-semibold text-green-700 mb-2">复合材料性能</h2>
+                            <p class="text-green-600 text-sm">包括复合材料的静态、动态力学响应及仿真结果。</p>
+                             <p class="mt-3 text-3xl font-bold text-green-500" id="compositeDataCount">567 条</p>
+                        </div>
+                        <div class="bg-indigo-50 p-6 rounded-lg shadow-sm hover:shadow-lg transition-shadow">
+                            <h2 class="text-xl font-semibold text-indigo-700 mb-2">防弹性能试验</h2>
+                            <p class="text-indigo-600 text-sm">记录详细的防弹试验条件、过程和结果数据。</p>
+                            <p class="mt-3 text-3xl font-bold text-indigo-500" id="ballisticDataCount">89 条</p>
+                        </div>
+                    </div>
+                </div>
+                 </div>
+        </main>
+    </div>
+
+    <script>
+        // 简单的客户端脚本示例，用于处理侧边栏点击和内容区域切换 (概念性)
+        const sidebarLinks = document.querySelectorAll('.sidebar-link');
+        const contentArea = document.getElementById('contentArea');
+        const mainSearchInput = document.getElementById('mainSearch');
+        const logoutButton = document.getElementById('logoutButton');
+
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                // 移除其他链接的激活状态
+                sidebarLinks.forEach(l => l.classList.remove('active'));
+                // 添加当前链接的激活状态
+                this.classList.add('active');
+
+                const module = this.dataset.module;
+                // 实际应用中，这里会根据module加载不同的内容到contentArea
+                // 例如，通过fetch API从后端获取数据和模板
+                contentArea.innerHTML = `
+                    <div class="bg-white p-8 rounded-lg shadow">
+                        <h1 class="text-2xl font-bold text-gray-800">模块: ${this.innerText.trim()}</h1>
+                        <p class="mt-4 text-gray-600">这里将显示与“${this.innerText.trim()}”模块相关的数据和操作界面。</p>
+                        <p class="mt-2 text-gray-500 text-sm">（此为演示界面，实际功能需后端支持和进一步开发）</p>
+                        ${module === 'fiber_performance' ? `
+                            <div class="mt-6">
+                                <button class="px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600">添加纤维数据</button>
+                                <button class="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600">批量导入</button>
+                            </div>
+                            <div class="mt-4 overflow-x-auto">
+                                <table class="min-w-full bg-white">
+                                    <thead class="bg-gray-200">
+                                        <tr>
+                                            <th class="text-left py-3 px-4 uppercase font-semibold text-sm">ID</th>
+                                            <th class="text-left py-3 px-4 uppercase font-semibold text-sm">批号</th>
+                                            <th class="text-left py-3 px-4 uppercase font-semibold text-sm">牌号</th>
+                                            <th class="text-left py-3 px-4 uppercase font-semibold text-sm">断裂强度 (GPa)</th>
+                                            <th class="text-left py-3 px-4 uppercase font-semibold text-sm">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="text-gray-700">
+                                        <tr>
+                                            <td class="text-left py-3 px-4">101</td>
+                                            <td class="text-left py-3 px-4">20230515-FIBER-A01</td>
+                                            <td class="text-left py-3 px-4">UHMWPE-TypeX</td>
+                                            <td class="text-left py-3 px-4">3.5</td>
+                                            <td class="text-left py-3 px-4">
+                                                <button class="text-blue-500 hover:text-blue-700 text-sm">查看</button>
+                                                <button class="text-yellow-500 hover:text-yellow-700 text-sm ml-2">编辑</button>
+                                                <button class="text-red-500 hover:text-red-700 text-sm ml-2">删除</button>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-left py-3 px-4">102</td>
+                                            <td class="text-left py-3 px-4">20230518-FIBER-B02</td>
+                                            <td class="text-left py-3 px-4">UHMWPE-TypeY</td>
+                                            <td class="text-left py-3 px-4">3.8</td>
+                                            <td class="text-left py-3 px-4">
+                                                <button class="text-blue-500 hover:text-blue-700 text-sm">查看</button>
+                                                <button class="text-yellow-500 hover:text-yellow-700 text-sm ml-2">编辑</button>
+                                                <button class="text-red-500 hover:text-red-700 text-sm ml-2">删除</button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+                console.log(`切换到模块: ${module}`);
+            });
+        });
+
+        mainSearchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                console.log(`执行搜索: ${this.value}`);
+                // 实际应用中会调用API进行搜索
+                alert(`正在搜索: ${this.value}`);
+            }
+        });
+
+        logoutButton.addEventListener('click', function() {
+            console.log('用户登出');
+            // 实际应用中会清除用户会话并重定向到登录页
+            alert('您已成功退出系统！');
+            // window.location.href = '/login.html'; // 假设有登录页
+        });
+
+        // 模拟获取首页统计数据
+        function loadDashboardStats() {
+            // 实际应用中会从API获取
+            document.getElementById('fiberDataCount').textContent = Math.floor(Math.random() * 2000 + 500) + ' 条';
+            document.getElementById('compositeDataCount').textContent = Math.floor(Math.random() * 1000 + 200) + ' 条';
+            document.getElementById('ballisticDataCount').textContent = Math.floor(Math.random() * 200 + 50) + ' 条';
+        }
+        // 页面加载时初始化首页统计
+        loadDashboardStats();
+
+    </script>
+</body>
+</html>
