@@ -226,10 +226,10 @@ def admin_permissions(db_session, basic_roles, basic_modules):
         permissions_to_add.append(RolePermissionModel(
             角色ID=admin_role.角色ID,
             模块ID=resin_spinning_module.模块ID,
-            允许读取=True,  # Full permissions for Admin on the new module
+            允许读取=True,
             允许写入=True,
             允许删除=True,
-            允许导入=True,
+            允许导入=True,  # Ensure CanImport is True
             允许导出=True
         ))
 

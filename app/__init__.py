@@ -28,13 +28,19 @@ def create_app():
     from .routes.auth_routes import auth_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
 
-    from .routes.resin_spinning_routes import resin_spinning_bp # 导入新的蓝图
-    app.register_blueprint(resin_spinning_bp, url_prefix='/api/resin-spinning') # 注册新的蓝图
+    from .routes.resin_spinning_routes import resin_spinning_bp 
+    app.register_blueprint(resin_spinning_bp, url_prefix='/api/resin-spinning')
+
+    from .routes.attachment_routes import attachment_bp # 导入附件蓝图
+    app.register_blueprint(attachment_bp, url_prefix='/api/attachments') # 注册附件蓝图
 
     # 可以添加更多的应用初始化代码，例如日志配置等
 
     @app.route('/hello')
     def hello():
         return '你好, Flask!'
+
+    # Load instance config if it exists (for UPLOAD_FOLDER)
+    app.config.from_pyfile('../instance/config.py', silent=True) # Go up one level to reach instance folder
 
     return app

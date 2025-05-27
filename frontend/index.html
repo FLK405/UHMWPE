@@ -358,6 +358,300 @@
                 button.addEventListener('click', handleTabButtonClick);
             });
         }
+
+        // --- START: Resin Spinning Module JS ---
+        function initializeResinSpinningModule() {
+            console.log('前端树脂与纺丝工艺参数模块已初始化。');
+            loadResinSpinningData(); 
+
+            const addBtn = document.getElementById('addResinSpinningBtn');
+            if(addBtn) addBtn.addEventListener('click', () => openResinSpinningModal());
+            
+            const refreshBtn = document.getElementById('refreshResinSpinningBtn');
+            if(refreshBtn) refreshBtn.addEventListener('click', () => loadResinSpinningData(
+                parseInt(document.querySelector('#resinSpinningPagination .current-page-display')?.dataset.currentPage || '1'),
+                10, 
+                { 
+                    batch_number: document.getElementById('searchBatchNumber')?.value,
+                    material_grade: document.getElementById('searchMaterialGrade')?.value
+                }
+            ));
+
+            const searchBtn = document.getElementById('searchResinSpinningBtn');
+            if(searchBtn) searchBtn.addEventListener('click', () => {
+                const filters = {
+                    batch_number: document.getElementById('searchBatchNumber').value,
+                    material_grade: document.getElementById('searchMaterialGrade').value
+                };
+                loadResinSpinningData(1, 10, filters);
+            });
+
+            const clearSearchBtn = document.getElementById('clearSearchResinSpinningBtn');
+            if(clearSearchBtn) clearSearchBtn.addEventListener('click', () => {
+                const batchNumInput = document.getElementById('searchBatchNumber');
+                const materialGradeInput = document.getElementById('searchMaterialGrade');
+                if(batchNumInput) batchNumInput.value = '';
+                if(materialGradeInput) materialGradeInput.value = '';
+                loadResinSpinningData();
+            });
+            
+            const form = document.getElementById('resinSpinningForm');
+            if(form) form.addEventListener('submit', handleSaveResinSpinning);
+            
+            const closeModalBtn = document.getElementById('closeResinSpinningModalBtn');
+            if(closeModalBtn) closeModalBtn.addEventListener('click', () => closeResinSpinningModal());
+            
+            const cancelModalBtn = document.getElementById('cancelResinSpinningModalBtn');
+            if(cancelModalBtn) cancelModalBtn.addEventListener('click', () => closeResinSpinningModal());
+            
+            const tableBody = document.getElementById('resinSpinningTableBody');
+            if(tableBody) {
+                tableBody.addEventListener('click', function(event) {
+                    const target = event.target;
+                    const editButton = target.closest('.edit-rs-btn');
+                    const deleteButton = target.closest('.delete-rs-btn');
+
+                    if (editButton) {
+                        const recordId = editButton.dataset.id;
+                        openResinSpinningModal(recordId);
+                    } else if (deleteButton) {
+                        const recordId = deleteButton.dataset.id;
+                        if (confirm(`您确定要删除记录 ID ${recordId} 吗？此操作无法撤销。`)) {
+                            deleteResinSpinningRecord(recordId);
+                        }
+                    }
+                });
+            }
+        }
+
+        async function loadResinSpinningData(page = 1, perPage = 10, filters = {}) {
+            if(typeof showLoading === 'function') showLoading(true, '加载树脂纺丝数据...');
+            
+            const tableBody = document.getElementById('resinSpinningTableBody');
+            const paginationControls = document.getElementById('resinSpinningPagination');
+            
+            if (!tableBody || !paginationControls) {
+                console.error('树脂纺丝模块的表格或分页元素未找到。');
+                if(typeof showLoading === 'function') showLoading(false);
+                return;
+            }
+
+            let queryParams = `?page=${page}&per_page=${perPage}`;
+            for (const key in filters) {
+                if (filters[key] && String(filters[key]).trim() !== '') {
+                    queryParams += `&${encodeURIComponent(key)}=${encodeURIComponent(String(filters[key]).trim())}`;
+                }
+            }
+
+            try {
+                const response = await fetch(`/api/resin-spinning${queryParams}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `HTTP 错误 ${response.status}` }));
+                    throw new Error(errorData.message || `加载数据失败 (状态码: ${response.status})`);
+                }
+                const data = await response.json();
+
+                if (data.success && data.records) {
+                    tableBody.innerHTML = ''; 
+                    if (data.records.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-10">未找到符合条件的记录。</td></tr>';
+                    } else {
+                        data.records.forEach(record => {
+                            const row = tableBody.insertRow();
+                            row.className = 'hover:bg-gray-50 transition-colors duration-150';
+                            row.innerHTML = `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.record_id}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${record.batch_number || 'N/A'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${record.material_grade || 'N/A'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.resin_molecular_weight_g_mol || 'N/A'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.spinning_temperature_c || 'N/A'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(record.created_at).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                    <button class="text-indigo-600 hover:text-indigo-800 transition-colors duration-150 edit-rs-btn" data-id="${record.record_id}">编辑</button>
+                                    <button class="text-red-600 hover:text-red-800 transition-colors duration-150 delete-rs-btn" data-id="${record.record_id}">删除</button>
+                                </td>
+                            `;
+                        });
+                    }
+                    renderResinSpinningPagination(data, filters);
+                } else {
+                    tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-10">加载数据失败: ${data.message || '未知错误'}</td></tr>`;
+                }
+            } catch (error) {
+                console.error('加载树脂纺丝数据时出错:', error);
+                tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-10">加载数据出错: ${error.message}</td></tr>`;
+                if(typeof showToast === 'function') showToast(`加载数据出错: ${error.message}`, 'error');
+            } finally {
+                if(typeof showLoading === 'function') showLoading(false);
+            }
+        }
+
+        function renderResinSpinningPagination(data, filters) {
+            const paginationControls = document.getElementById('resinSpinningPagination');
+            if (!paginationControls) return;
+
+            paginationControls.innerHTML = `
+                <span class="text-sm text-gray-700 current-page-display" data-current-page="${data.current_page}">
+                    第 ${data.current_page} 页 / 共 ${data.pages || 1} 页 (总计 ${data.total || 0} 条记录)
+                </span>
+                <div class="inline-flex mt-2 xs:mt-0">
+                    <button data-page="${data.current_page - 1}" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-l hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed prev-rs-page-btn" ${!data.has_prev ? 'disabled' : ''}>
+                        上一页
+                    </button>
+                    <button data-page="${data.current_page + 1}" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-r border-0 border-l border-blue-700 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed next-rs-page-btn" ${!data.has_next ? 'disabled' : ''}>
+                        下一页
+                    </button>
+                </div>
+            `;
+            paginationControls.querySelectorAll('.prev-rs-page-btn, .next-rs-page-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        loadResinSpinningData(parseInt(this.dataset.page), 10, filters);
+                    }
+                });
+            });
+        }
+
+        async function openResinSpinningModal(recordId = null) {
+            const modal = document.getElementById('resinSpinningModal');
+            const modalTitle = document.getElementById('resinSpinningModalTitle');
+            const form = document.getElementById('resinSpinningForm');
+            if (!form || !modal || !modalTitle) {
+                console.error("Modal elements not found!");
+                return;
+            }
+            form.reset();
+            const recordIdField = form.elements['rs_record_id'] || form.elements['record_id'];
+            if(recordIdField) recordIdField.value = '';
+
+
+            if (recordId) {
+                modalTitle.textContent = '编辑前端树脂与纺丝工艺参数';
+                if(typeof showLoading === 'function') showLoading(true, '加载记录详情...');
+                try {
+                    const response = await fetch(`/api/resin-spinning/${recordId}`);
+                    if (!response.ok) {
+                         const errorData = await response.json().catch(() => ({ message: `HTTP错误 ${response.status}` }));
+                         throw new Error(errorData.message || '无法加载记录。');
+                    }
+                    const data = await response.json();
+                    if (data.success && data.record) {
+                        const record = data.record;
+                        for (const key in record) {
+                            const formField = form.elements[`rs_${key}`] || form.elements[key];
+                            if (formField) {
+                                formField.value = record[key] !== null ? record[key] : '';
+                            }
+                        }
+                         if(recordIdField) recordIdField.value = record.record_id;
+                    } else {
+                        throw new Error(data.message || '未找到记录数据。');
+                    }
+                } catch (error) {
+                    if(typeof showToast === 'function') showToast(`加载编辑数据失败: ${error.message}`, 'error');
+                    if(typeof showLoading === 'function') showLoading(false);
+                    return; 
+                } finally {
+                    if(typeof showLoading === 'function') showLoading(false);
+                }
+            } else {
+                modalTitle.textContent = '添加新的前端树脂与纺丝工艺参数';
+            }
+            modal.classList.remove('hidden');
+            let tempStyle = document.getElementById('temp-modal-styles');
+            if (!tempStyle) {
+                tempStyle = document.createElement('style');
+                tempStyle.id = 'temp-modal-styles';
+                // Ensure input-field class is defined or used by your modal's inputs
+                tempStyle.textContent = '.input-field { padding: 0.5rem 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); outline: none;} .input-field:focus { ring-width: 2px; ring-color: #2563EB; border-color: #2563EB; }'; 
+                document.head.appendChild(tempStyle);
+            }
+        }
+
+        function closeResinSpinningModal() {
+            const modal = document.getElementById('resinSpinningModal');
+            if(modal) modal.classList.add('hidden');
+        }
+
+        async function handleSaveResinSpinning(event) {
+            event.preventDefault();
+            if(typeof showLoading === 'function') showLoading(true, '正在保存数据...');
+            const form = event.target;
+            const recordIdField = form.elements['rs_record_id'] || form.elements['record_id'];
+            const recordId = recordIdField ? recordIdField.value : null;
+            
+            const formData = new FormData(form);
+            const dataToSubmit = {};
+            
+            const allFields = ['batch_number', 'material_grade', 'supplier', 'resin_type', 
+                'resin_molecular_weight_g_mol', 'polydispersity_index_pdi', 'intrinsic_viscosity_dl_g', 
+                'melting_point_c', 'crystallinity_percent', 'spinning_method', 'solvent_system', 
+                'solution_concentration_percent', 'spinning_temperature_c', 'spinneret_specifications', 
+                'coagulation_bath_composition', 'coagulation_bath_temperature_c', 'draw_ratio', 
+                'heat_treatment_temperature_c', 'remarks'];
+
+            allFields.forEach(fieldKey => {
+                const formKey = `rs_${fieldKey}`;
+                const value = formData.get(formKey);
+                const inputElement = form.elements[formKey];
+                const inputType = inputElement ? inputElement.type : 'text';
+
+                if (value === null || (typeof value === 'string' && value.trim() === '')) {
+                     if (inputElement && inputType === 'number') {
+                        dataToSubmit[fieldKey] = null;
+                     } else if (!inputElement || !inputElement.required) { 
+                        dataToSubmit[fieldKey] = null; 
+                     } else {
+                        dataToSubmit[fieldKey] = value; 
+                     }
+                } else {
+                    dataToSubmit[fieldKey] = value;
+                }
+            });
+
+            const url = recordId ? `/api/resin-spinning/${recordId}` : '/api/resin-spinning';
+            const method = recordId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToSubmit)
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || `保存失败 (状态码: ${response.status})`);
+                }
+                if(typeof showToast === 'function') showToast(result.message || '操作成功!', 'success');
+                closeResinSpinningModal();
+                loadResinSpinningData(); 
+            } catch (error) {
+                console.error('保存树脂纺丝数据失败:', error);
+                if(typeof showToast === 'function') showToast(`保存失败: ${error.message}`, 'error');
+            } finally {
+                if(typeof showLoading === 'function') showLoading(false);
+            }
+        }
+
+        async function deleteResinSpinningRecord(recordId) {
+            if(typeof showLoading === 'function') showLoading(true, '正在删除记录...');
+            try {
+                const response = await fetch(`/api/resin-spinning/${recordId}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                     throw new Error(result.message || `删除失败 (状态码: ${response.status})`);
+                }
+                if(typeof showToast === 'function') showToast(result.message || '记录已成功删除!', 'success');
+                loadResinSpinningData(); 
+            } catch (error) {
+                console.error('删除树脂纺丝记录失败:', error);
+                if(typeof showToast === 'function') showToast(`删除失败: ${error.message}`, 'error');
+            } finally {
+                if(typeof showLoading === 'function') showLoading(false);
+            }
+        }
+        // --- END: Resin Spinning Module JS ---
+
         function initializeMicrostructureTabs() { /* ... same as provided ... */ 
             const navContainer = contentArea.querySelector('#microstructureNavContainer nav');
             if (!navContainer) return;
@@ -378,6 +672,303 @@
                 button.addEventListener('click', handleTabButtonClick);
             });
         }
+
+        // --- START: Resin Spinning Module JS ---
+        function initializeResinSpinningModule() {
+            console.log('前端树脂与纺丝工艺参数模块已初始化。');
+            loadResinSpinningData(); 
+
+            const addBtn = document.getElementById('addResinSpinningBtn');
+            if(addBtn) addBtn.addEventListener('click', () => openResinSpinningModal());
+            
+            const refreshBtn = document.getElementById('refreshResinSpinningBtn');
+            if(refreshBtn) refreshBtn.addEventListener('click', () => loadResinSpinningData(
+                parseInt(document.querySelector('#resinSpinningPagination .current-page-display')?.dataset.currentPage || '1'),
+                10, 
+                { 
+                    batch_number: document.getElementById('searchBatchNumber')?.value,
+                    material_grade: document.getElementById('searchMaterialGrade')?.value
+                }
+            ));
+
+            const searchBtn = document.getElementById('searchResinSpinningBtn');
+            if(searchBtn) searchBtn.addEventListener('click', () => {
+                const filters = {
+                    batch_number: document.getElementById('searchBatchNumber').value,
+                    material_grade: document.getElementById('searchMaterialGrade').value
+                };
+                loadResinSpinningData(1, 10, filters);
+            });
+
+            const clearSearchBtn = document.getElementById('clearSearchResinSpinningBtn');
+            if(clearSearchBtn) clearSearchBtn.addEventListener('click', () => {
+                const batchNumInput = document.getElementById('searchBatchNumber');
+                const materialGradeInput = document.getElementById('searchMaterialGrade');
+                if(batchNumInput) batchNumInput.value = '';
+                if(materialGradeInput) materialGradeInput.value = '';
+                loadResinSpinningData();
+            });
+            
+            const form = document.getElementById('resinSpinningForm');
+            if(form) form.addEventListener('submit', handleSaveResinSpinning);
+            
+            const closeModalBtn = document.getElementById('closeResinSpinningModalBtn');
+            if(closeModalBtn) closeModalBtn.addEventListener('click', () => closeResinSpinningModal());
+            
+            const cancelModalBtn = document.getElementById('cancelResinSpinningModalBtn');
+            if(cancelModalBtn) cancelModalBtn.addEventListener('click', () => closeResinSpinningModal());
+            
+            const tableBody = document.getElementById('resinSpinningTableBody');
+            if(tableBody) {
+                tableBody.addEventListener('click', function(event) {
+                    const target = event.target;
+                    const editButton = target.closest('.edit-rs-btn');
+                    const deleteButton = target.closest('.delete-rs-btn');
+
+                    if (editButton) {
+                        const recordId = editButton.dataset.id;
+                        openResinSpinningModal(recordId);
+                    } else if (deleteButton) {
+                        const recordId = deleteButton.dataset.id;
+                        if (confirm(`您确定要删除记录 ID ${recordId} 吗？此操作无法撤销。`)) {
+                            deleteResinSpinningRecord(recordId);
+                        }
+                    }
+                });
+            }
+        }
+
+        async function loadResinSpinningData(page = 1, perPage = 10, filters = {}) {
+            if(typeof showLoading === 'function') showLoading(true, '加载树脂纺丝数据...');
+            
+            const tableBody = document.getElementById('resinSpinningTableBody');
+            const paginationControls = document.getElementById('resinSpinningPagination');
+            
+            if (!tableBody || !paginationControls) {
+                console.error('树脂纺丝模块的表格或分页元素未找到。');
+                if(typeof showLoading === 'function') showLoading(false);
+                return;
+            }
+
+            let queryParams = `?page=${page}&per_page=${perPage}`;
+            for (const key in filters) {
+                if (filters[key] && String(filters[key]).trim() !== '') {
+                    queryParams += `&${encodeURIComponent(key)}=${encodeURIComponent(String(filters[key]).trim())}`;
+                }
+            }
+
+            try {
+                const response = await fetch(`/api/resin-spinning${queryParams}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ message: `HTTP 错误 ${response.status}` }));
+                    throw new Error(errorData.message || `加载数据失败 (状态码: ${response.status})`);
+                }
+                const data = await response.json();
+
+                if (data.success && data.records) {
+                    tableBody.innerHTML = ''; 
+                    if (data.records.length === 0) {
+                        tableBody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-500 py-10">未找到符合条件的记录。</td></tr>';
+                    } else {
+                        data.records.forEach(record => {
+                            const row = tableBody.insertRow();
+                            row.className = 'hover:bg-gray-50 transition-colors duration-150';
+                            row.innerHTML = `
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${record.record_id}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${record.batch_number || 'N/A'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${record.material_grade || 'N/A'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.resin_molecular_weight_g_mol || 'N/A'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${record.spinning_temperature_c || 'N/A'}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${new Date(record.created_at).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                                    <button class="text-indigo-600 hover:text-indigo-800 transition-colors duration-150 edit-rs-btn" data-id="${record.record_id}">编辑</button>
+                                    <button class="text-red-600 hover:text-red-800 transition-colors duration-150 delete-rs-btn" data-id="${record.record_id}">删除</button>
+                                </td>
+                            `;
+                        });
+                    }
+                    renderResinSpinningPagination(data, filters);
+                } else {
+                    tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-10">加载数据失败: ${data.message || '未知错误'}</td></tr>`;
+                }
+            } catch (error) {
+                console.error('加载树脂纺丝数据时出错:', error);
+                tableBody.innerHTML = `<tr><td colspan="7" class="text-center text-red-500 py-10">加载数据出错: ${error.message}</td></tr>`;
+                if(typeof showToast === 'function') showToast(`加载数据出错: ${error.message}`, 'error');
+            } finally {
+                if(typeof showLoading === 'function') showLoading(false);
+            }
+        }
+
+        function renderResinSpinningPagination(data, filters) {
+            const paginationControls = document.getElementById('resinSpinningPagination');
+            if (!paginationControls) return;
+
+            paginationControls.innerHTML = `
+                <span class="text-sm text-gray-700 current-page-display" data-current-page="${data.current_page}">
+                    第 ${data.current_page} 页 / 共 ${data.pages || 1} 页 (总计 ${data.total || 0} 条记录)
+                </span>
+                <div class="inline-flex mt-2 xs:mt-0">
+                    <button data-page="${data.current_page - 1}" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-l hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed prev-rs-page-btn" ${!data.has_prev ? 'disabled' : ''}>
+                        上一页
+                    </button>
+                    <button data-page="${data.current_page + 1}" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-r border-0 border-l border-blue-700 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed next-rs-page-btn" ${!data.has_next ? 'disabled' : ''}>
+                        下一页
+                    </button>
+                </div>
+            `;
+            paginationControls.querySelectorAll('.prev-rs-page-btn, .next-rs-page-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    if (!this.disabled) {
+                        loadResinSpinningData(parseInt(this.dataset.page), 10, filters);
+                    }
+                });
+            });
+        }
+
+        async function openResinSpinningModal(recordId = null) {
+            const modal = document.getElementById('resinSpinningModal');
+            const modalTitle = document.getElementById('resinSpinningModalTitle');
+            const form = document.getElementById('resinSpinningForm');
+            if (!form || !modal || !modalTitle) {
+                console.error("Modal elements not found!");
+                return;
+            }
+            form.reset();
+            const recordIdField = form.elements['rs_record_id'] || form.elements['record_id'];
+            if(recordIdField) recordIdField.value = '';
+
+
+            if (recordId) {
+                modalTitle.textContent = '编辑前端树脂与纺丝工艺参数';
+                if(typeof showLoading === 'function') showLoading(true, '加载记录详情...');
+                try {
+                    const response = await fetch(`/api/resin-spinning/${recordId}`);
+                    if (!response.ok) {
+                         const errorData = await response.json().catch(() => ({ message: `HTTP错误 ${response.status}` }));
+                         throw new Error(errorData.message || '无法加载记录。');
+                    }
+                    const data = await response.json();
+                    if (data.success && data.record) {
+                        const record = data.record;
+                        for (const key in record) {
+                            const formField = form.elements[`rs_${key}`] || form.elements[key];
+                            if (formField) {
+                                formField.value = record[key] !== null ? record[key] : '';
+                            }
+                        }
+                         if(recordIdField) recordIdField.value = record.record_id;
+                    } else {
+                        throw new Error(data.message || '未找到记录数据。');
+                    }
+                } catch (error) {
+                    if(typeof showToast === 'function') showToast(`加载编辑数据失败: ${error.message}`, 'error');
+                    if(typeof showLoading === 'function') showLoading(false);
+                    return; 
+                } finally {
+                    if(typeof showLoading === 'function') showLoading(false);
+                }
+            } else {
+                modalTitle.textContent = '添加新的前端树脂与纺丝工艺参数';
+            }
+            modal.classList.remove('hidden');
+            let tempStyle = document.getElementById('temp-modal-styles');
+            if (!tempStyle) {
+                tempStyle = document.createElement('style');
+                tempStyle.id = 'temp-modal-styles';
+                // Ensure input-field class is defined or used by your modal's inputs
+                tempStyle.textContent = '.input-field { padding: 0.5rem 0.75rem; border: 1px solid #D1D5DB; border-radius: 0.375rem; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); outline: none;} .input-field:focus { ring-width: 2px; ring-color: #2563EB; border-color: #2563EB; }'; 
+                document.head.appendChild(tempStyle);
+            }
+        }
+
+        function closeResinSpinningModal() {
+            const modal = document.getElementById('resinSpinningModal');
+            if(modal) modal.classList.add('hidden');
+        }
+
+        async function handleSaveResinSpinning(event) {
+            event.preventDefault();
+            if(typeof showLoading === 'function') showLoading(true, '正在保存数据...');
+            const form = event.target;
+            const recordIdField = form.elements['rs_record_id'] || form.elements['record_id'];
+            const recordId = recordIdField ? recordIdField.value : null;
+            
+            const formData = new FormData(form);
+            const dataToSubmit = {};
+            
+            const allFields = ['batch_number', 'material_grade', 'supplier', 'resin_type', 
+                'resin_molecular_weight_g_mol', 'polydispersity_index_pdi', 'intrinsic_viscosity_dl_g', 
+                'melting_point_c', 'crystallinity_percent', 'spinning_method', 'solvent_system', 
+                'solution_concentration_percent', 'spinning_temperature_c', 'spinneret_specifications', 
+                'coagulation_bath_composition', 'coagulation_bath_temperature_c', 'draw_ratio', 
+                'heat_treatment_temperature_c', 'remarks'];
+
+            allFields.forEach(fieldKey => {
+                const formKey = `rs_${fieldKey}`;
+                const value = formData.get(formKey);
+                const inputElement = form.elements[formKey];
+                const inputType = inputElement ? inputElement.type : 'text';
+
+                if (value === null || (typeof value === 'string' && value.trim() === '')) {
+                     // For numeric fields specifically, ensure null is passed if empty, not an empty string
+                     if (inputElement && inputType === 'number') {
+                        dataToSubmit[fieldKey] = null;
+                     } else if (!inputElement || !inputElement.required) { // For non-required text fields, empty string is fine or null
+                        dataToSubmit[fieldKey] = null; // Or "" if your backend prefers empty strings for optional text
+                     } else {
+                        dataToSubmit[fieldKey] = value; // Let backend handle validation for required empty strings
+                     }
+                } else {
+                    dataToSubmit[fieldKey] = value;
+                }
+            });
+            // record_id is already part of dataToSubmit if it was in the form (hidden field)
+            // No need to add it separately if formKey was rs_record_id and fieldKey became record_id
+
+            const url = recordId ? `/api/resin-spinning/${recordId}` : '/api/resin-spinning';
+            const method = recordId ? 'PUT' : 'POST';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dataToSubmit)
+                });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                    throw new Error(result.message || `保存失败 (状态码: ${response.status})`);
+                }
+                if(typeof showToast === 'function') showToast(result.message || '操作成功!', 'success');
+                closeResinSpinningModal();
+                loadResinSpinningData(); 
+            } catch (error) {
+                console.error('保存树脂纺丝数据失败:', error);
+                if(typeof showToast === 'function') showToast(`保存失败: ${error.message}`, 'error');
+            } finally {
+                if(typeof showLoading === 'function') showLoading(false);
+            }
+        }
+
+        async function deleteResinSpinningRecord(recordId) {
+            if(typeof showLoading === 'function') showLoading(true, '正在删除记录...');
+            try {
+                const response = await fetch(`/api/resin-spinning/${recordId}`, { method: 'DELETE' });
+                const result = await response.json();
+                if (!response.ok || !result.success) {
+                     throw new Error(result.message || `删除失败 (状态码: ${response.status})`);
+                }
+                if(typeof showToast === 'function') showToast(result.message || '记录已成功删除!', 'success');
+                loadResinSpinningData(); 
+            } catch (error) {
+                console.error('删除树脂纺丝记录失败:', error);
+                if(typeof showToast === 'function') showToast(`删除失败: ${error.message}`, 'error');
+            } finally {
+                if(typeof showLoading === 'function') showLoading(false);
+            }
+        }
+        // --- END: Resin Spinning Module JS ---
+
         function handleTabButtonClick(event) { /* ... same as provided ... */
             const clickedButton = event.currentTarget;
             const navContainer = clickedButton.closest('nav'); 
@@ -452,5 +1043,6 @@
         // Initial call to setup based on auth status
         checkLoginStatusAndSetup(); // Or simply initializePage() if auth check is fully in 2.3
     </script>
+    <script src="js/resin_spinning_module.js" defer></script> <!-- Link the new module script -->
 </body>
 </html>

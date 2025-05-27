@@ -13,3 +13,7 @@ pytest>=7.0.0 # Python测试框架
 pytest-flask>=1.2.0 # Pytest插件，用于测试Flask应用
 # Faker # (可选) 用于生成测试数据
 # pytest-cov # (可选) 用于测试覆盖率报告
+
+# Data Handling for Batch Import
+pandas>=1.3.0 # For Excel file reading
+openpyxl>=3.0.0 # Pandas engine for reading .xlsx files

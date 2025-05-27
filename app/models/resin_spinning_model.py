@@ -104,3 +104,14 @@ class ResinSpinningProcessModel(db.Model):
         """从数据库删除"""
         db.session.delete(self)
         db.session.commit()
+
+    # Relationship to AttachmentModel
+    # This allows fetching all attachments linked to a specific ResinSpinningProcessModel instance
+    attachments = db.relationship(
+        'AttachmentModel',
+        primaryjoin="and_(ResinSpinningProcessModel.record_id == foreign(AttachmentModel.parent_record_id), "
+                    "AttachmentModel.parent_module_name == '前端树脂与纺丝工艺表')",
+        lazy='dynamic', # Returns a query object, attachments are loaded on access
+        cascade='all, delete-orphan', # If a resin_spinning record is deleted, its attachments are also deleted
+        backref=db.backref('resin_spinning_record', lazy='joined') # Optional: how AttachmentModel refers back to this
+    )

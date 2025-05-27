@@ -202,6 +202,174 @@ class ResinSpinningService:
             db.session.rollback()
             return False, f"删除记录时发生内部错误: {str(e)}", 500
 
+    @staticmethod
+    def batch_create_records(records_data: list, user_id: int) -> dict:
+        """
+        批量创建前端树脂与纺丝工艺参数记录。
+        :param records_data: 记录数据列表，每个元素是一个包含行号和记录数据的字典。
+                             例如: [{"row_number": 2, "data": {"batch_number": "B001", ...}}, ...]
+        :param user_id: 创建记录的用户ID。
+        :return: 包含成功、失败计数和错误详情的字典。
+        """
+        success_count = 0
+        failure_count = 0
+        errors = []
+
+        required_fields = ['batch_number', 'material_grade'] # 批号和材料牌号是必填项
+        numerical_fields_specs = {
+            'resin_molecular_weight_g_mol': (18, 2), 
+            'polydispersity_index_pdi': (10, 3),
+            'intrinsic_viscosity_dl_g': (10, 3),
+            'melting_point_c': (10, 2),
+            'crystallinity_percent': (10, 2),
+            'solution_concentration_percent': (10, 2),
+            'spinning_temperature_c': (10, 2),
+            'coagulation_bath_temperature_c': (10, 2),
+            'draw_ratio': (10, 2),
+            'heat_treatment_temperature_c': (10, 2)
+        }
+
+        for item in records_data:
+            row_number = item.get("row_number", "N/A") # 从传入数据获取行号
+            record_data = item.get("data", {})
+
+            # 1. 验证必填字段
+            missing_required = [field for field in required_fields if not record_data.get(field)]
+            if missing_required:
+                failure_count += 1
+                errors.append({
+                    "row_number": row_number, 
+                    "data": record_data, 
+                    "error": f"必填字段缺失: {', '.join(missing_required)}"
+                })
+                continue # 跳过此记录的处理
+
+            # 2. 类型转换和验证
+            conversion_error = False
+            processed_data = record_data.copy() # 创建副本以存储转换后的值
+            for field, _ in numerical_fields_specs.items():
+                if field in processed_data and processed_data[field] is not None:
+                    original_value = processed_data[field]
+                    converted_value = convert_to_float_or_none(original_value)
+                    if converted_value is None and str(original_value).strip() != '': 
+                        failure_count += 1
+                        errors.append({
+                            "row_number": row_number,
+                            "data": record_data, # 原始数据
+                            "error": f"字段 '{field}' 的值 '{original_value}' 不是有效的数字。"
+                        })
+                        conversion_error = True
+                        break 
+                    processed_data[field] = converted_value
+            
+            if conversion_error:
+                continue
+
+            # 3. 创建模型实例
+            new_record = ResinSpinningProcessModel(
+                batch_number=processed_data.get('batch_number'),
+                material_grade=processed_data.get('material_grade'),
+                supplier=processed_data.get('supplier'),
+                resin_type=processed_data.get('resin_type', 'UHMWPE'),
+                resin_molecular_weight_g_mol=processed_data.get('resin_molecular_weight_g_mol'),
+                polydispersity_index_pdi=processed_data.get('polydispersity_index_pdi'),
+                intrinsic_viscosity_dl_g=processed_data.get('intrinsic_viscosity_dl_g'),
+                melting_point_c=processed_data.get('melting_point_c'),
+                crystallinity_percent=processed_data.get('crystallinity_percent'),
+                spinning_method=processed_data.get('spinning_method'),
+                solvent_system=processed_data.get('solvent_system'),
+                solution_concentration_percent=processed_data.get('solution_concentration_percent'),
+                spinning_temperature_c=processed_data.get('spinning_temperature_c'),
+                spinneret_specifications=processed_data.get('spinneret_specifications'),
+                coagulation_bath_composition=processed_data.get('coagulation_bath_composition'),
+                coagulation_bath_temperature_c=processed_data.get('coagulation_bath_temperature_c'),
+                draw_ratio=processed_data.get('draw_ratio'),
+                heat_treatment_temperature_c=processed_data.get('heat_treatment_temperature_c'),
+                remarks=processed_data.get('remarks'),
+                created_by_user_id=user_id,
+                last_modified_by_user_id=user_id
+            )
+
+            # 4. 尝试保存到数据库
+            try:
+                db.session.add(new_record) # 添加到会话
+                db.session.flush() # 将更改刷新到数据库，以便捕获唯一性等错误
+                success_count += 1
+            except IntegrityError as e:
+                db.session.rollback() # 回滚当前记录的添加
+                failure_count += 1
+                error_message = f"数据库完整性错误: {str(e.orig)}"
+                if 'UQ_前端树脂与纺丝工艺表_批号' in str(e.orig).lower():
+                    error_message = f"批号 '{processed_data.get('batch_number')}' 已存在。"
+                errors.append({"row_number": row_number, "data": record_data, "error": error_message})
+            except Exception as e:
+                db.session.rollback()
+                failure_count += 1
+                errors.append({"row_number": row_number, "data": record_data, "error": f"保存时发生未知错误: {str(e)}"})
+        
+        # 循环结束后，提交所有成功的记录
+        if success_count > 0:
+            try:
+                db.session.commit()
+            except Exception as e:
+                db.session.rollback()
+                # 这个错误比较严重，可能需要将所有本批次的 success_count 标记为失败
+                # 或者至少记录一个全局错误
+                # For simplicity here, we'll assume individual flushes caught most issues.
+                # A more robust solution might use nested transactions or savepoints.
+                return {
+                    "success_count": 0, # Or adjust based on how you handle this commit failure
+                    "failure_count": success_count + failure_count, 
+                    "errors": errors + [{"row_number": "GLOBAL", "data": None, "error": f"最终提交失败: {str(e)}"}]
+                }
+                
+        return {
+            "success_count": success_count,
+            "failure_count": failure_count,
+            "errors": errors
+        }
+
+    @staticmethod
+    def get_all_records_for_export(filters: dict = None) -> list:
+        """
+        获取所有匹配过滤条件的记录，用于导出。
+        :param filters: 包含过滤条件的字典 (例如: {'material_grade': '牌号A', 'batch_number': '批号X'})。
+        :return: ResinSpinningProcessModel 对象列表。
+        """
+        query = ResinSpinningProcessModel.query
+
+        if filters:
+            if 'material_grade' in filters and filters['material_grade']:
+                query = query.filter(ResinSpinningProcessModel.material_grade.ilike(f"%{filters['material_grade']}%"))
+            if 'batch_number' in filters and filters['batch_number']:
+                query = query.filter(ResinSpinningProcessModel.batch_number.ilike(f"%{filters['batch_number']}%"))
+            if 'resin_type' in filters and filters['resin_type']:
+                query = query.filter(ResinSpinningProcessModel.resin_type.ilike(f"%{filters['resin_type']}%"))
+            # Add other filters as needed, matching get_all_records logic
+            # Example:
+            # if 'start_date' in filters and filters['start_date']:
+            #     try:
+            #         start_date = datetime.strptime(filters['start_date'], '%Y-%m-%d').date()
+            #         query = query.filter(func.date(ResinSpinningProcessModel.created_at) >= start_date)
+            #     except ValueError:
+            #         pass # Or raise a specific error / log it
+            # if 'end_date' in filters and filters['end_date']:
+            #     try:
+            #         end_date = datetime.strptime(filters['end_date'], '%Y-%m-%d').date()
+            #         query = query.filter(func.date(ResinSpinningProcessModel.created_at) <= end_date)
+            #     except ValueError:
+            #         pass
+
+        query = query.order_by(ResinSpinningProcessModel.record_id.asc()) # Or any preferred order for export
+        
+        try:
+            return query.all()
+        except Exception as e:
+            # Log the error, e.g., current_app.logger.error(f"Error fetching records for export: {e}")
+            print(f"Error fetching records for export: {e}") # Placeholder for logging
+            return []
+
+
 # app/utils/common_utils.py (假设这个文件存在)
 # def convert_to_float_or_none(value):
 #     if value is None:
