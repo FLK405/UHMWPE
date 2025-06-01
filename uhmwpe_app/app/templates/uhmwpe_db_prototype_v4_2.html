@@ -1,0 +1,2371 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UHMWPE防弹材料数据库 - 主页</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> <!-- Chart.js CDN -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+        .sidebar-link { @apply block w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-blue-500 hover:text-white rounded-md transition-colors duration-150 flex items-center; }
+        .sidebar-link svg { @apply mr-3 flex-shrink-0 h-5 w-5; }
+        .sidebar-link.active { @apply bg-blue-600 text-white; }
+        .action-button { @apply bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg shadow-sm flex items-center text-sm transition-colors duration-150; }
+        .action-button svg { @apply h-4 w-4 mr-1.5; }
+        .module-description { @apply text-gray-600 mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg; }
+        .data-table { @apply min-w-full whitespace-nowrap bg-white rounded-lg shadow; }
+        .data-table thead { @apply bg-gray-200; }
+        .data-table th { @apply px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider; }
+        .data-table tbody { @apply bg-white divide-y divide-gray-200; }
+        .data-table td { @apply px-6 py-4 whitespace-nowrap text-sm; }
+        .data-table .action-link-edit { @apply text-green-600 hover:text-green-900 ml-2 md:ml-4; }
+        .data-table .action-link-delete { @apply text-red-600 hover:text-red-900 ml-2 md:ml-4; }
+        .tab-button { @apply px-4 py-2 font-medium text-sm rounded-md transition-colors duration-150; }
+        .tab-button.active { @apply bg-blue-600 text-white shadow-md; }
+        .tab-button:not(.active) { @apply text-gray-600 hover:bg-gray-200 hover:text-gray-800; }
+        .tab-content { @apply hidden mt-6; }
+        .tab-content.active { @apply block; }
+        .ui-message { position: fixed; top: 20px; right: 20px; padding: 1rem; border-radius: 0.375rem; color: white; z-index: 1000; opacity: 0; transition: opacity 0.5s ease-in-out, transform 0.5s ease-in-out; transform: translateY(-20px); max-width: 350px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .ui-message.success { background-color: #10B981; }
+        .ui-message.error { background-color: #EF4444; }
+        .ui-message.show { opacity: 1; transform: translateY(0); }
+        .modal { @apply fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center; z-index: 50; }
+        .modal-content { @apply bg-white p-8 rounded-lg shadow-xl w-full transform transition-all; transform: scale(0.95); opacity: 0; }
+        .modal.show .modal-content { transform: scale(1); opacity: 1; }
+        .input-class, .select-class, .textarea-class { @apply mt-1 block w-full py-2 px-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm; }
+        .checkbox-class { @apply mt-1 h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500; }
+        .form-section-title { @apply text-lg font-semibold text-gray-700 border-b pb-1 mb-4; }
+        .sub-section { @apply mt-6 pt-4 border-t; }
+        .sub-section-header { @apply flex justify-between items-center mb-3; }
+        .sub-section-title { @apply text-xl font-semibold text-gray-700; }
+        .sub-action-button { @apply bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium py-1.5 px-3 rounded-md flex items-center; }
+        .sub-action-button svg { @apply h-4 w-4 mr-1; }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="flex h-screen overflow-hidden">
+        <aside class="w-64 bg-white shadow-xl overflow-y-auto p-4 space-y-1">
+            <div class="text-3xl font-extrabold text-blue-700 mb-8 text-center tracking-tight">材料数据库</div>
+            <nav>
+                <!-- Sidebar buttons -->
+                <button class="sidebar-link active" data-module="home">...</button>
+                <button class="sidebar-link" data-module="resin_spinning">...</button>
+                <button class="sidebar-link" data-module="fiber_performance">...</button>
+                <button class="sidebar-link" data-module="microstructure">...</button>
+                <button class="sidebar-link" data-module="resin_interface">...</button>
+                <button class="sidebar-link" data-module="composite_performance">...</button>
+                <button class="sidebar-link" data-module="ballistic_performance">...</button>
+                <button class="sidebar-link" data-module="literature_standard">...</button>
+                <hr class="my-3 border-gray-200">
+                <button class="sidebar-link" data-module="user_management">...</button>
+                <button class="sidebar-link" data-module="system_guide">...</button>
+            </nav>
+        </aside>
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <header class="bg-white shadow-md p-4">
+                <div class="flex justify-between items-center">
+                    <div class="flex items-center">
+                        <h1 class="text-xl md:text-2xl font-semibold text-gray-800">UHMWPE Ballistic Materials Database</h1>
+                        <input type="text" id="mainSearch" placeholder="全局搜索..." class="ml-4 md:ml-8 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-blue-500 focus:border-blue-500 hidden md:block" style="min-width: 250px;">
+                    </div>
+                    <div class="flex items-center space-x-3">
+                        <!-- Auth-related elements -->
+                        <button id="loginHeaderButton" class="hidden px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg">Login</button>
+                        <button id="registerHeaderButton" class="hidden px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 hover:bg-gray-300 rounded-lg">Register</button>
+
+                        <div id="userInfoDisplay" class="hidden items-center space-x-2">
+                            <span id="usernameDisplay" class="text-sm text-gray-700">Welcome, User</span>
+                            <button id="logoutHeaderButton" class="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-100 hover:bg-red-200 rounded-lg">Logout</button>
+                        </div>
+                         <button id="themeToggle" class="p-2 rounded-full hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400">
+                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m8.66-15.66l-.707.707M4.04 19.96l-.707.707M21 12h-1M4 12H3m15.66 8.66l-.707-.707M4.04 4.04l-.707-.707"></path></svg>
+                        </button>
+                    </div>
+                </div>
+            </header>
+            <div id="contentArea" class="flex-1 p-6 lg:p-8 overflow-y-auto bg-gray-50"></div>
+        </main>
+    </div>
+    <div id="globalMessage" class="ui-message"></div>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal hidden">
+        <div id="loginModalContent" class="modal-content max-w-md">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Login</h2>
+                <button id="closeLoginModal" class="text-gray-600 hover:text-gray-800 text-2xl">&times;</button>
+            </div>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label for="loginUsername" class="block text-sm font-medium text-gray-700">Username or Email</label>
+                    <input type="text" id="loginUsername" name="username" class="input-class" required>
+                </div>
+                <div class="mb-6">
+                    <label for="loginPassword" class="block text-sm font-medium text-gray-700">Password</label>
+                    <input type="password" id="loginPassword" name="password" class="input-class" required>
+                </div>
+                <div id="loginErrorMessages" class="text-red-500 text-sm mb-4"></div>
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancelLoginModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300">Cancel</button>
+                    <button type="submit" class="action-button bg-blue-600 hover:bg-blue-700">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div id="registrationModal" class="modal hidden">
+        <div id="registrationModalContent" class="modal-content max-w-lg">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Register New Account</h2>
+                <button id="closeRegistrationModal" class="text-gray-600 hover:text-gray-800 text-2xl">&times;</button>
+            </div>
+            <form id="registrationForm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                    <div>
+                        <label for="regUsername" class="block text-sm font-medium text-gray-700">Username <span class="text-red-500">*</span></label>
+                        <input type="text" id="regUsername" name="Username" class="input-class" required>
+                    </div>
+                    <div>
+                        <label for="regEmail" class="block text-sm font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
+                        <input type="email" id="regEmail" name="Email" class="input-class" required>
+                    </div>
+                    <div>
+                        <label for="regPassword" class="block text-sm font-medium text-gray-700">Password <span class="text-red-500">*</span></label>
+                        <input type="password" id="regPassword" name="PasswordHash" class="input-class" required> <!-- Name is PasswordHash to match backend User model for creation -->
+                    </div>
+                    <div>
+                        <label for="regFullName" class="block text-sm font-medium text-gray-700">Full Name (Optional)</label>
+                        <input type="text" id="regFullName" name="FirstName" class="input-class"> <!-- Assuming FirstName for FullName for now -->
+                    </div>
+                    <!-- RoleID select can be added here if needed, similar to userFormFields -->
+                    <!-- For now, backend default or admin assignment is assumed -->
+                </div>
+                <div id="registrationErrorMessages" class="text-red-500 text-sm mt-4 mb-4"></div>
+                <div class="flex justify-end space-x-3 mt-8">
+                    <button type="button" id="cancelRegistrationModal" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300">Cancel</button>
+                    <button type="submit" class="action-button">Register</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Global Variables & Utility Functions ---
+        const contentArea = document.getElementById('contentArea');
+        const navLinks = document.querySelectorAll('aside nav button.sidebar-link');
+        const mainSearchInput = document.getElementById('mainSearch');
+
+        // Chart instances
+        window.fibersByGradeChartInstance = null;
+        window.documentTypesChartInstance = null;
+
+        let currentUser = null; // To store logged-in user details
+        let currentSelectedFiberId = null; let currentSelectedFiberName = '';
+        let currentSelectedResinId = null; let currentSelectedResinName = '';
+        let currentSelectedCompositeId = null; let currentSelectedCompositeName = '';
+        let currentSelectedProductId = null; let currentSelectedProductName = '';
+
+        async function apiFetch(url, options = {}) { /* ... */ }
+        function showUIMessage(message, type = 'success') { /* ... */ }
+        function openModal(modalElement, modalContentElement) { /* ... */ }
+        function closeModal(modalElement, modalContentElement) { /* ... */ }
+        function safe_isoformat(dt_obj) { return dt_obj ? new Date(dt_obj).toISOString().split('T')[0] : null; }
+        function decimal_to_str_or_none(dec_val) { return dec_val !== null && dec_val !== undefined ? String(dec_val) : null; }
+        function to_decimal_or_none(value) { if (value === null || value === '') return null; try { return String(value); } catch (e) { return null; } }
+        async function populateSelectDropdown(selectElement, apiUrl, valueField, textFieldsArray, defaultOptionText = "Select...", selectedValue = null) { /* ... */ }
+
+        // --- UI State Helper Functions for Tables ---
+        function getLoadingMessageHtml(columns = 1, isList = false) {
+            if (isList) return `<li class="p-4 text-center text-gray-500 italic">Loading data...</li>`;
+            return `<tr><td colspan="${columns}" class="text-center text-gray-500 py-4 italic">Loading data...</td></tr>`;
+        }
+
+        function getNoDataMessageHtml(columns = 1, isList = false) {
+            if (isList) return `<li class="p-4 text-center text-gray-500">No data available.</li>`;
+            return `<tr><td colspan="${columns}" class="text-center text-gray-500 py-4">No data available.</td></tr>`;
+        }
+
+        function getErrorMessageHtml(columns = 1, isList = false) {
+            if (isList) return `<li class="p-4 text-center text-red-500">Failed to load data. Please try again.</li>`;
+            return `<tr><td colspan="${columns}" class="text-center text-red-500 py-4">Failed to load data. Please try again.</td></tr>`;
+        }
+
+        function setTableContainerMessage(containerElement, messageType, columns = 1, isList = false) {
+            if (!containerElement) return;
+            let messageHtml = '';
+            switch (messageType) {
+                case 'loading': messageHtml = getLoadingMessageHtml(columns, isList); break;
+                case 'nodata': messageHtml = getNoDataMessageHtml(columns, isList); break;
+                case 'error': messageHtml = getErrorMessageHtml(columns, isList); break;
+                default: messageHtml = '';
+            }
+
+            if (isList) { // Assuming containerElement is a UL/OL for lists
+                containerElement.innerHTML = messageHtml;
+            } else { // Assuming containerElement is a tbody or a div that will wrap a table
+                 // If it's a div that should contain a full table for the message:
+                if (containerElement.tagName !== 'TBODY') {
+                     containerElement.innerHTML = `<table class="data-table w-full"><tbody>${messageHtml}</tbody></table>`;
+                } else { // If it's already a tbody
+                    containerElement.innerHTML = messageHtml;
+                }
+            }
+        }
+
+        const homePageHTMLTemplate = `
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <!-- Stat Card 1: Total Fibers -->
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4 hover:shadow-xl transition-shadow duration-300">
+                    <div class="p-3 bg-blue-500 rounded-full">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 4a2 2 0 114 0v1a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-1a2 2 0 100 4h1a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-1a2 2 0 10-4 0v1a1 1 0 01-1 1H7a1 1 0 01-1-1v-3a1 1 0 00-1-1H4a2 2 0 110-4h1a1 1 0 001-1V7a1 1 0 011-1h3a1 1 0 001-1V4z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Fiber Performance Data</p>
+                        <p id="statTotalFibers" class="text-2xl font-bold text-gray-800">Loading...</p>
+                    </div>
+                </div>
+                <!-- Stat Card 2: Total Resins -->
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4 hover:shadow-xl transition-shadow duration-300">
+                    <div class="p-3 bg-green-500 rounded-full">
+                         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Resin & Spinning Processes</p>
+                        <p id="statTotalResins" class="text-2xl font-bold text-gray-800">Loading...</p>
+                    </div>
+                </div>
+                <!-- Stat Card 3: Total Composites -->
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4 hover:shadow-xl transition-shadow duration-300">
+                    <div class="p-3 bg-yellow-500 rounded-full">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Composite Performance Data</p>
+                        <p id="statTotalComposites" class="text-2xl font-bold text-gray-800">Loading...</p>
+                    </div>
+                </div>
+                <!-- Stat Card 4: Total Literature -->
+                <div class="bg-white p-6 rounded-xl shadow-lg flex items-center space-x-4 hover:shadow-xl transition-shadow duration-300">
+                     <div class="p-3 bg-purple-500 rounded-full">
+                        <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v11.494m0 0a8.485 8.485 0 0011.92 0M12 17.747a8.485 8.485 0 01-11.92 0M12 17.747l-.001-.001L12 17.747z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M12 12.75a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z"></path></svg>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500">Literature & Standards</p>
+                        <p id="statTotalLiterature" class="text-2xl font-bold text-gray-800">Loading...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg">
+                    <h3 class="text-lg md:text-xl font-semibold text-gray-700 mb-3">Fibers by Name/Grade</h3>
+                    <div class="chart-container" style="height:300px;">
+                        <canvas id="fibersByGradeChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-4 md:p-6 rounded-xl shadow-lg">
+                    <h3 class="text-lg md:text-xl font-semibold text-gray-700 mb-3">Document Types</h3>
+                     <div class="chart-container" style="height:300px;">
+                        <canvas id="documentTypesChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Navigation & Learn More -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Quick Navigation</h3>
+                    <div class="space-y-3">
+                        <a href="#resin_spinning" class="quick-nav-link group">Resin & Spinning</a>
+                        <a href="#fiber_performance" class="quick-nav-link group">Fiber Performance</a>
+                        <a href="#composite_performance" class="quick-nav-link group">Composite Performance</a>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg">
+                    <h3 class="text-xl font-semibold text-gray-700 mb-4">Learn More</h3>
+                    <p class="text-gray-600 mb-4">Explore the system guide or start searching the database.</p>
+                    <div class="space-x-0 md:space-x-3 space-y-3 md:space-y-0 flex flex-col md:flex-row">
+                        <button id="learnMoreGuideBtn" class="action-button bg-blue-500 hover:bg-blue-600 justify-center">System Guide</button>
+                        <button id="quickStartSearchBtn" class="action-button bg-teal-500 hover:bg-teal-600 justify-center">Start Searching</button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // --- Main Module Activation Logic ---
+        function activateModule(moduleName) {
+            // RBAC check for user_management module
+            if (moduleName === 'user_management' && (!currentUser || currentUser.RoleName !== 'Administrator')) {
+                contentArea.innerHTML = `<div class="p-4 bg-red-100 text-red-700 rounded-md">Access Denied: You do not have permission to view this module.</div>`;
+                showUIMessage('Access Denied for User Management module.', 'error');
+                // Optionally, redirect to home or previous module
+                // window.location.hash = 'home'; // This would trigger hashchange and reactivate home
+                // For now, just show message in content area and prevent further processing for this module.
+                // Ensure the active class is removed from other links and applied to current (or home)
+                navLinks.forEach(l => l.classList.remove('active'));
+                const homeLink = document.querySelector(`button.sidebar-link[data-module="home"]`);
+                if (homeLink) homeLink.classList.add('active');
+                return; // Stop further processing for this module
+            }
+
+            contentArea.innerHTML = ''; // Clear previous content
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.dataset.module === moduleName) {
+                    link.classList.add('active');
+                }
+            });
+
+            // Hide all tab containers before loading new module
+            document.querySelectorAll('.tab-navigation-container').forEach(tc => tc.classList.add('hidden'));
+
+            switch (moduleName) {
+                case 'home':
+                    contentArea.innerHTML = homePageHTMLTemplate;
+                    loadDashboardStats();
+                    addQuickNavListeners();
+                    addLearnMoreListeners();
+                    break;
+                case 'literature_standard':
+                    setupLiteratureStandardModule();
+                    break;
+                case 'resin_spinning':
+                    setupResinSpinningModule();
+                    break;
+                case 'fiber_performance':
+                    // This module has tabs, setup the main container then activate the default tab
+                    contentArea.innerHTML = `
+                        <div class="mb-4 border-b border-gray-200">
+                            <nav id="fiberTabs" class="-mb-px flex space-x-4" aria-label="Tabs">
+                                <button class="tab-button active" data-tab="fiber_basic_molecular">基本信息与分子量</button>
+                                <button class="tab-button" data-tab="fiber_thermal">热性能</button>
+                                <button class="tab-button" data-tab="fiber_mechanical">力学性能</button>
+                            </nav>
+                        </div>
+                        <div id="fiberTabContentContainer">
+                            <div id="fiber_basic_molecular_content" class="tab-content active"></div>
+                            <div id="fiber_thermal_content" class="tab-content"></div>
+                            <div id="fiber_mechanical_content" class="tab-content"></div>
+                        </div>`;
+                    initializeTabs('fiberTabs', 'fiberTabContentContainer');
+                    setupFiberBasicMolecularTab(); // Default tab
+                    break;
+                case 'microstructure':
+                    setupMicrostructureModule();
+                    break;
+                case 'resin_interface':
+                    setupResinInterfaceModule();
+                    break;
+                case 'composite_performance':
+                    setupCompositePerformanceModule();
+                    break;
+                case 'ballistic_performance':
+                     setupBallisticPerformanceModule();
+                    break;
+                case 'user_management':
+                    setupUserManagementModule();
+                    break;
+                case 'system_guide':
+                    setupSystemGuideModule();
+                    break;
+                default:
+                    contentArea.innerHTML = `<p class="text-gray-600">模块正在建设中: ${moduleName}</p>`;
+            }
+        }
+        function initializeTabs(navContainerId, contentContainerId) { /* ... */ }
+        function handleTabButtonClick(event) { /* ... (existing, calls specific tab setup functions including new ones) ... */ }
+
+        // --- Module Setup Functions (condensed for brevity where previously implemented) ---
+        // Function to render a generic table for main entities (Updated to handle its own AddNew button if config provided)
+        // Parameters:
+        //   containerId: ID of the div to render the table in
+        //   apiUrl: API endpoint to fetch data
+        //   columns: Array of objects { header: "Header Name", field: "fieldName", renderFunc?: (data) => "html" }
+        //   actions: Array of objects { label: "Action", class: "css-class", onClick: (item) => function_to_call }
+        //   pkField: Name of the primary key field in the data items (e.g., 'FiberID')
+        //   modalConfig: Object { key: "ModalKey", toDict: toDictFunc, formFields: fieldsArr, title: "Modal Title", modalId: "ActualModalID", contentId: "ActualModalContentID" }
+        //   onAddCallback: function to call after successfully adding an item (usually to refresh the table)
+        //   itemSpecificActions?: (item) => "html string for more buttons if needed"
+        async function renderMainEntityTable(config) {
+            const { containerId, apiUrl, columns, actions, pkField, itemSpecificActions, addNewButtonId, modalConfig, onAddCallback, entityNameFriendly } = config;
+            const container = document.getElementById(containerId);
+            if (!container) { console.error(`Container ${containerId} not found.`); return; }
+
+            const colCount = columns.length + (actions.length > 0 || itemSpecificActions ? 1 : 0);
+            setTableContainerMessage(container, 'loading', colCount);
+
+            try {
+                const items = await apiFetch(apiUrl);
+                if (!items || items.length === 0) {
+                    setTableContainerMessage(container, 'nodata', colCount);
+                    return;
+                }
+
+                let tableHTML = `<table class="data-table w-full"><thead><tr>`;
+                columns.forEach(col => tableHTML += `<th>${col.header}</th>`);
+                if (actions.length > 0 || itemSpecificActions) tableHTML += `<th>Actions</th>`;
+                tableHTML += `</tr></thead><tbody>`;
+
+                items.forEach(item => {
+                    tableHTML += `<tr>`;
+                    columns.forEach(col => {
+                        const value = item[col.field];
+                        tableHTML += `<td>${col.renderFunc ? col.renderFunc(value, item) : (value !== null && value !== undefined ? value : 'N/A')}</td>`;
+                    });
+                    if (actions.length > 0 || itemSpecificActions) {
+                        tableHTML += `<td>`;
+                        actions.forEach(action => {
+                            tableHTML += `<button class="${action.class}" data-id="${item[pkField]}">${action.label}</button>`;
+                        });
+                        if (itemSpecificActions) {
+                            tableHTML += itemSpecificActions(item);
+                        }
+                        tableHTML += `</td>`;
+                    }
+                    tableHTML += `</tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+                container.innerHTML = tableHTML;
+
+                // Add event listeners for action buttons
+                actions.forEach(action => {
+                    container.querySelectorAll(`.${action.class.split(' ')[0]}`).forEach(button => { // Use first class for selector
+                        button.addEventListener('click', (e) => {
+                             const itemId = e.target.dataset.id;
+                             const itemData = items.find(i => String(i[pkField]) === itemId);
+                             action.onClick(itemId, itemData, config); // Pass full config
+                        });
+                    });
+                });
+                 // If addNewButtonId and modalConfig are provided, set up the "Add New" button listener
+                if (addNewButtonId && modalConfig) {
+                    const addNewBtn = document.getElementById(addNewButtonId);
+                    if (addNewBtn) {
+                        // Show/hide Add button based on Admin role for UserManagement entities
+                        if ( (entityNameFriendly === 'User' || entityNameFriendly === 'Role' || entityNameFriendly === 'Help Document') && (!currentUser || currentUser.RoleName !== 'Administrator')) {
+                            addNewBtn.classList.add('hidden');
+                        } else {
+                             addNewBtn.classList.remove('hidden');
+                        }
+
+                        addNewBtn.removeEventListener('click', modalConfig._addHandler); // Remove previous if any
+                        modalConfig._addHandler = () => openPropertyCrudModal(
+                            modalConfig.key, modalConfig.modelName, modalConfig.toDict, modalConfig.apiRouteName,
+                            modalConfig.formFields, modalConfig.title, null, null, pkField, null,
+                            modalConfig.modalId, modalConfig.contentId, onAddCallback || (() => renderMainEntityTable(config)) // Default onAdd is to re-render this table
+                        );
+                        addNewBtn.addEventListener('click', modalConfig._addHandler);
+                    }
+                }
+
+
+            } catch (error) {
+                setTableContainerMessage(container, 'error', colCount);
+                console.error(`Error fetching or rendering table for ${containerId}:`, error);
+            }
+        }
+
+        // Generic function to fetch and display properties related to a parent item (e.g., molecular weights for a fiber)
+        // containerId: where to render the table
+        // apiUrl: to fetch data (e.g., /api/fibers/${fiberId}/molecular_weights)
+        // columns: array of { header: "Header", field: "fieldName", renderFunc?: (data) => "html" }
+        // pkField: primary key of the property records (e.g., 'TestID')
+        // modalConfig: { propertyKey, modelName, toDictFunc, apiRouteName, formFields, modalTitle, parentIdFieldName, modalElementId, modalContentElementId }
+        // callbackAfterAction: Function to call after add/edit/delete (usually to refresh this table)
+        // parentItemId: The ID of the parent item (e.g., fiberId)
+        // addNewButtonId: ID of the button to trigger adding a new property (optional)
+        async function fetchAndDisplayRelatedProperties(config) {
+            const { containerId, apiUrl, columns, pkField, modalConfig, callbackAfterAction, parentItemId, addNewButtonId, entityNameFriendly } = config;
+            const container = document.getElementById(containerId);
+            if (!container) { console.error(`Container ${containerId} not found for related properties.`); return; }
+
+            const colCount = columns.length + 1; // +1 for actions column
+            setTableContainerMessage(container, 'loading', colCount);
+
+            try {
+                const properties = await apiFetch(apiUrl);
+                 if (!properties || properties.length === 0) {
+                    setTableContainerMessage(container, 'nodata', colCount);
+                    return;
+                }
+
+                let tableHTML = `<table class="data-table w-full"><thead><tr>`;
+                columns.forEach(col => tableHTML += `<th>${col.header}</th>`);
+                tableHTML += `<th>Actions</th></tr></thead><tbody>`;
+
+                properties.forEach(prop => {
+                    tableHTML += `<tr>`;
+                    columns.forEach(col => {
+                        const value = prop[col.field];
+                        tableHTML += `<td>${col.renderFunc ? col.renderFunc(value, prop) : (value !== null && value !== undefined ? value : 'N/A')}</td>`;
+                    });
+                    tableHTML += `<td>
+                        <button class="action-link-edit" data-id="${prop[pkField]}">Edit</button>
+                        <button class="action-link-delete" data-id="${prop[pkField]}">Delete</button>
+                    </td>`;
+                    tableHTML += `</tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+                container.innerHTML = tableHTML;
+
+                // Add event listeners for edit/delete
+                container.querySelectorAll('.action-link-edit').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const recordId = e.target.dataset.id;
+                        // Fetch the specific record for editing to ensure fresh data
+                        const baseApiForSingleItem = modalConfig.apiRouteName.includes('/') ? modalConfig.apiRouteName.substring(0, modalConfig.apiRouteName.lastIndexOf('/')) : modalConfig.apiRouteName;
+
+                        const recordToEdit = await apiFetch(`/${baseApiForSingleItem}/${recordId}`);
+                        openPropertyCrudModal(
+                            modalConfig.propertyKey, modalConfig.modelName, modalConfig.toDictFunc,
+                            modalConfig.apiRouteName, modalConfig.formFields, modalConfig.modalTitle,
+                            parentItemId, recordToEdit, pkField, modalConfig.parentIdFieldName,
+                            modalConfig.modalElementId, modalConfig.modalContentElementId, callbackAfterAction
+                        );
+                    });
+                });
+                container.querySelectorAll('.action-link-delete').forEach(button => {
+                    button.addEventListener('click', async (e) => {
+                        const recordId = e.target.dataset.id;
+                        if (confirm(`Are you sure you want to delete this ${entityNameFriendly || 'record'} (ID: ${recordId})?`)) {
+                            try {
+                                const baseApiForSingleItem = modalConfig.apiRouteName.includes('/') ? modalConfig.apiRouteName.substring(0, modalConfig.apiRouteName.lastIndexOf('/')) : modalConfig.apiRouteName;
+                                await apiFetch(`/${baseApiForSingleItem}/${recordId}`, { method: 'DELETE' });
+                                showUIMessage(`${entityNameFriendly || 'Record'} deleted successfully.`, 'success');
+                                if (callbackAfterAction) callbackAfterAction();
+                            } catch (error) { /* msg handled by apiFetch */ }
+                        }
+                    });
+                });
+                 // If addNewButtonId and modalConfig are provided (for sub-properties)
+                if (addNewButtonId && modalConfig && parentItemId !== null) { // parentItemId must be present for sub-properties
+                    const addNewBtn = document.getElementById(addNewButtonId);
+                    if (addNewBtn) {
+                         addNewBtn.classList.remove('hidden'); // Assuming sub-property add buttons are visible if parent exists
+                        addNewBtn.removeEventListener('click', modalConfig._addHandler); // Remove previous if any
+                        modalConfig._addHandler = () => openPropertyCrudModal(
+                            modalConfig.propertyKey, modalConfig.modelName, modalConfig.toDictFunc,
+                            modalConfig.apiRouteName, modalConfig.formFields, modalConfig.modalTitle,
+                            parentItemId, null, pkField, modalConfig.parentIdFieldName,
+                            modalConfig.modalElementId, modalConfig.modalContentElementId, callbackAfterAction
+                        );
+                        addNewBtn.addEventListener('click', modalConfig._addHandler);
+                    }
+                } else if (addNewButtonId && parentItemId === null) { // Hide add button if parent not selected
+                     const addNewBtn = document.getElementById(addNewButtonId);
+                     if(addNewBtn) addNewBtn.classList.add('hidden');
+                }
+
+            } catch (error) {
+                setTableContainerMessage(container, 'error', colCount);
+                console.error(`Error fetching related properties for ${containerId}:`, error);
+            }
+        }
+
+        // --- Literature & Standards Module ---
+        const literatureFormFields = [ // Already defined, kept for context, no change here
+            { name: 'DocumentType', label: 'Document Type', type: 'select', options: ['标准', '论文', '书籍', '报告', '其他'], required: true },
+            { name: 'Title_StandardNo', label: 'Title/Standard No.', type: 'text', required: true },
+            { name: 'Authors_IssuingBody', label: 'Authors/Issuing Body', type: 'text' },
+            { name: 'PublicationYear', label: 'Publication Year', type: 'number' },
+            { name: 'Journal_Publisher', label: 'Journal/Publisher', type: 'text' },
+            { name: 'Volume_Issue_Pages', label: 'Volume/Issue/Pages', type: 'text' },
+            { name: 'DOI_ISBN_URL', label: 'DOI/ISBN/URL', type: 'text' },
+            { name: 'Abstract_Scope', label: 'Abstract/Scope', type: 'textarea', rows: 5, colSpan: 2 },
+            { name: 'Keywords', label: 'Keywords (comma-separated)', type: 'text', colSpan: 2 },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+        function setupLiteratureStandardModule() {
+            contentArea.innerHTML = `
+                <div class="module-description">
+                    管理和查阅相关的学术文献、行业标准及研究报告。
+                </div>
+                <div class="mb-6 flex justify-end">
+                    <button id="addNewLiteratureBtn" class="action-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        Add New Document
+                    </button>
+                </div>
+                <div id="literatureTableContainer" class="overflow-x-auto bg-white p-2 rounded-lg shadow"></div>
+                <div id="LiteratureModal" class="modal hidden"><div id="LiteratureModalContent" class="modal-content max-w-3xl"></div></div>`;
+
+            const tableConfig = {
+                containerId: 'literatureTableContainer',
+                apiUrl: '/api/literature_standards',
+                columns: [
+                    { header: 'ID', field: 'DocumentID', renderFunc: val => `<span class="font-mono text-xs">${val}</span>` },
+                    { header: 'Type', field: 'DocumentType' },
+                    { header: 'Title/Standard No.', field: 'Title_StandardNo', renderFunc: val => `<span class="font-semibold">${val}</span>` },
+                    { header: 'Authors/Body', field: 'Authors_IssuingBody' },
+                    { header: 'Year', field: 'PublicationYear' },
+                    { header: 'Keywords', field: 'Keywords' }
+                ],
+                actions: [
+                    { label: 'Edit', class: 'action-link-edit', onClick: (id, item, config) => {
+                        openPropertyCrudModal(config.modalConfig.key, config.modalConfig.modelName, config.modalConfig.toDict, config.modalConfig.apiRouteName, config.modalConfig.formFields, config.modalConfig.title, null, item, config.pkField, null, config.modalConfig.modalId, config.modalConfig.contentId, config.onAddCallback);
+                    }},
+                    { label: 'Delete', class: 'action-link-delete', onClick: async (id, item, config) => {
+                        if (confirm(`Are you sure you want to delete "${item.Title_StandardNo}"?`)) {
+                            try {
+                                await apiFetch(`/api/literature_standards/${id}`, { method: 'DELETE' });
+                                showUIMessage('Document deleted.', 'success');
+                                renderMainEntityTable(config); // Re-render table
+                            } catch (error) { /* Handled by apiFetch */ }
+                        }
+                    }}
+                ],
+                pkField: 'DocumentID',
+                entityNameFriendly: 'Literature/Standard',
+                addNewButtonId: 'addNewLiteratureBtn', // Link to the button
+                modalConfig: { // Config for the modal
+                    key: 'Literature',
+                    modelName: 'Literature_Standard', // Or whatever model name is appropriate
+                    toDict: null, // No specific toDict needed if form fields match model fields
+                    apiRouteName: 'literature_standards',
+                    formFields: literatureFormFields,
+                    title: 'Literature/Standard Document',
+                    modalId: 'LiteratureModal',
+                    contentId: 'LiteratureModalContent'
+                }
+                // onAddCallback is implicitly renderMainEntityTable(this_config) by default in renderMainEntityTable
+            };
+            renderMainEntityTable(tableConfig);
+        }
+
+        // --- Resin & Spinning Process Module ---
+        const resinSpinningFormFields = [
+            { name: 'ProcessName', label: 'Process Name', type: 'text', required: true },
+            { name: 'ResinID', label: 'Resin', type: 'select', optionsUrl: '/api/resins', optionValue: 'ResinID', optionTextFields: ['ResinName'], required: true },
+            { name: 'Solvent', label: 'Solvent', type: 'text' },
+            { name: 'ResinConcentration', label: 'Resin Conc. (wt%)', type: 'number', step: '0.01' },
+            { name: 'SpinningTemperature', label: 'Spinning Temp (°C)', type: 'number', step: '0.1' },
+            { name: 'SpinneretDiameter', label: 'Spinneret Dia. (mm)', type: 'number', step: '0.001' },
+            { name: 'AirGapDistance', label: 'Air Gap (mm)', type: 'number', step: '0.1' },
+            { name: 'CoagulationBathComposition', label: 'Coagulation Bath Comp.', type: 'text' },
+            { name: 'CoagulationBathTemperature', label: 'Coagulation Bath Temp (°C)', type: 'number', step: '0.1' },
+            { name: 'DrawingStages', label: 'Drawing Stages', type: 'number', step: '1' },
+            { name: 'TotalDrawRatio', label: 'Total Draw Ratio', type: 'number', step: '0.1' },
+            { name: 'PostProcessingDetails', label: 'Post-Processing', type: 'textarea', rows: 3, colSpan: 2 },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+        function setupResinSpinningModule() {
+            contentArea.innerHTML = `
+                <div class="module-description">
+                    管理预制体树脂的纺丝工艺参数。这些参数直接影响后续纤维的性能。
+                </div>
+                <div class="mb-6 flex justify-end">
+                    <button id="addNewSpinningProcessBtn" class="action-button">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                        Add New Spinning Process
+                    </button>
+                </div>
+                <div id="spinningProcessTableContainer" class="overflow-x-auto bg-white p-2 rounded-lg shadow"></div>
+                <div id="SpinningProcessModal" class="modal hidden"><div id="SpinningProcessModalContent" class="modal-content max-w-3xl"></div></div>`;
+
+            const tableConfig = {
+                containerId: 'spinningProcessTableContainer',
+                apiUrl: '/api/spinning_processes',
+                columns: [
+                    { header: 'ID', field: 'SpinningProcessID' },
+                    { header: 'Process Name', field: 'ProcessName', renderFunc: val => `<span class="font-semibold">${val}</span>` },
+                    { header: 'Resin Used', field: 'ResinName' }, // Assuming ResinName is returned by API
+                    { header: 'Solvent', field: 'Solvent' },
+                    { header: 'Total Draw Ratio', field: 'TotalDrawRatio' }
+                ],
+                actions: [
+                    { label: 'Edit', class: 'action-link-edit', onClick: (id, item, config) => {
+                        openPropertyCrudModal(config.modalConfig.key, config.modalConfig.modelName, null, config.modalConfig.apiRouteName, config.modalConfig.formFields, config.modalConfig.title, null, item, config.pkField, null, config.modalConfig.modalId, config.modalConfig.contentId, config.onAddCallback);
+                    }},
+                    { label: 'Delete', class: 'action-link-delete', onClick: async (id, item, config) => {
+                        if (confirm(`Are you sure you want to delete spinning process "${item.ProcessName}"?`)) {
+                            try {
+                                await apiFetch(`/api/spinning_processes/${id}`, { method: 'DELETE' });
+                                showUIMessage('Spinning process deleted.', 'success');
+                                renderMainEntityTable(config);
+                            } catch (error) { /* Handled by apiFetch */ }
+                        }
+                    }}
+                ],
+                pkField: 'SpinningProcessID',
+                entityNameFriendly: 'Spinning Process',
+                addNewButtonId: 'addNewSpinningProcessBtn',
+                modalConfig: {
+                    key: 'SpinningProcess',
+                    modelName: 'PrecursorResin_SpinningProcess',
+                    apiRouteName: 'spinning_processes',
+                    formFields: resinSpinningFormFields,
+                    title: 'Spinning Process',
+                    modalId: 'SpinningProcessModal',
+                    contentId: 'SpinningProcessModalContent'
+                }
+            };
+            renderMainEntityTable(tableConfig);
+        }
+
+        // --- Fiber Performance Module ---
+        // -- Tab: Basic Info & Molecular Weight --
+        const fiberFormFields = [ // Defined, no change
+            { name: 'FiberName', label: 'Fiber Name/Batch No.', type: 'text', required: true },
+            { name: 'SpinningProcessID', label: 'Spinning Process', type: 'select', optionsUrl: '/api/spinning_processes', optionValue: 'SpinningProcessID', optionTextFields: ['ProcessName'], required: true },
+            { name: 'LinearDensity', label: 'Linear Density (dtex/denier)', type: 'number', step: 'any' },
+            { name: 'Diameter', label: 'Diameter (µm)', type: 'number', step: 'any' },
+            { name: 'ProductionDate', label: 'Production Date', type: 'date' },
+            { name: 'Manufacturer_ResearchGroup', label: 'Manufacturer/Group', type: 'text' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const fiberMolecularWeightFormFields = [
+            { name: 'TestMethod', label: 'Test Method', type: 'text' },
+            { name: 'TestConditions', label: 'Test Conditions', type: 'textarea', rows: 3, colSpan: 2 },
+            { name: 'IntrinsicViscosity', label: 'Intrinsic Viscosity (dL/g)', type: 'number', step: 'any' },
+            { name: 'MolecularWeight_Mn', label: 'Mn (g/mol)', type: 'number', step: 'any' },
+            { name: 'MolecularWeight_Mw', label: 'Mw (g/mol)', type: 'number', step: 'any' },
+            { name: 'MolecularWeight_Mz', label: 'Mz (g/mol)', type: 'number', step: 'any' },
+            { name: 'PolydispersityIndex', label: 'PDI (Mw/Mn)', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+
+        function setupFiberBasicMolecularTab() {
+            const tabContent = document.getElementById('fiber_basic_molecular_content');
+            tabContent.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">Fibers</h3>
+                            <button id="addNewFiberBtn" class="action-button text-sm">Add Fiber</button>
+                        </div>
+                        <div id="fiberListContainer"></div>
+                    </div>
+                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">Molecular Weight Data for <span id="selectedFiberNameMolWeight" class="text-blue-600">N/A</span></h3>
+                            <button id="addNewMolWeightBtn" class="sub-action-button hidden">Add MW Data</button>
+                        </div>
+                        <div id="molecularWeightTableContainer">
+                            <p class="text-center text-gray-500 py-4">Select a fiber to view molecular weight data.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="FiberModal" class="modal hidden"><div id="FiberModalContent" class="modal-content max-w-3xl"></div></div>
+                <div id="MolecularWeightModal" class="modal hidden"><div id="MolecularWeightModalContent" class="modal-content max-w-2xl"></div></div>`;
+
+            const fiberTableConfig = {
+                containerId: 'fiberListContainer',
+                apiUrl: '/api/fibers',
+                columns: [
+                    { header: 'ID', field: 'FiberID'},
+                    { header: 'Name/Batch', field: 'FiberName', renderFunc: val => `<span class="font-semibold">${val}</span>` },
+                    { header: 'Actions', field: 'FiberID', renderFunc: (id, item) => {
+                        return `<button class="sub-action-button text-xs manage-mw-btn" data-fiberid="${id}" data-fibername="${item.FiberName}">Manage MW</button>`;
+                    }}
+                ],
+                actions: [ // Main Edit/Delete for Fiber itself
+                     { label: 'Edit', class: 'action-link-edit ml-0 md:ml-0', onClick: (id, item, config) => { // Added ml-0 for tighter spacing
+                        openPropertyCrudModal(config.modalConfig.key, config.modalConfig.modelName, null, config.modalConfig.apiRouteName, config.modalConfig.formFields, config.modalConfig.title, null, item, config.pkField, null, config.modalConfig.modalId, config.modalConfig.contentId, config.onAddCallback);
+                    }},
+                    { label: 'Delete', class: 'action-link-delete', onClick: async (id, item, config) => {
+                        if (confirm(`Are you sure you want to delete fiber "${item.FiberName}"? This will also delete related property data.`)) {
+                            try {
+                                await apiFetch(`/api/fibers/${id}`, { method: 'DELETE' });
+                                showUIMessage('Fiber deleted.', 'success');
+                                renderMainEntityTable(config);
+                                currentSelectedFiberId = null; // Clear selection
+                                document.getElementById('selectedFiberNameMolWeight').textContent = 'N/A';
+                                setTableContainerMessage(document.getElementById('molecularWeightTableContainer'), 'nodata', 5); // Reset sub-table
+                            } catch (error) { /* Handled by apiFetch */ }
+                        }
+                    }}
+                ],
+                pkField: 'FiberID',
+                entityNameFriendly: 'Fiber',
+                addNewButtonId: 'addNewFiberBtn',
+                modalConfig: {
+                    key: 'Fiber', modelName: 'Fibers', apiRouteName: 'fibers',
+                    formFields: fiberFormFields, title: 'Fiber',
+                    modalId: 'FiberModal', contentId: 'FiberModalContent'
+                }
+            };
+            renderMainEntityTable(fiberTableConfig);
+
+            // Event delegation for "Manage MW" buttons
+            document.getElementById('fiberListContainer').addEventListener('click', function(event) {
+                if (event.target && event.target.classList.contains('manage-mw-btn')) {
+                    currentSelectedFiberId = event.target.dataset.fiberid;
+                    currentSelectedFiberName = event.target.dataset.fibername;
+                    document.getElementById('selectedFiberNameMolWeight').textContent = currentSelectedFiberName;
+                    document.getElementById('addNewMolWeightBtn').classList.remove('hidden');
+                    fetchAndDisplayFiberMolecularWeight();
+                }
+            });
+        }
+
+        async function fetchAndDisplayFiberMolecularWeight() {
+            if (!currentSelectedFiberId) {
+                 setTableContainerMessage(document.getElementById('molecularWeightTableContainer'), 'nodata', 5, false); // Indicate no fiber selected
+                 document.getElementById('molecularWeightTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber to manage its molecular weight data.</p>';
+                 document.getElementById('addNewMolWeightBtn').classList.add('hidden');
+                return;
+            }
+            const molecularWeightConfig = {
+                containerId: 'molecularWeightTableContainer',
+                apiUrl: `/api/fibers/${currentSelectedFiberId}/molecular_weights`,
+                columns: [
+                    { header: 'Test ID', field: 'TestID' }, { header: 'Method', field: 'TestMethod' },
+                    { header: 'Mn (g/mol)', field: 'MolecularWeight_Mn', renderFunc: val => decimal_to_str_or_none(val) },
+                    { header: 'Mw (g/mol)', field: 'MolecularWeight_Mw', renderFunc: val => decimal_to_str_or_none(val) },
+                    { header: 'PDI', field: 'PolydispersityIndex', renderFunc: val => decimal_to_str_or_none(val) }
+                ],
+                pkField: 'TestID',
+                entityNameFriendly: 'Molecular Weight Data',
+                parentIdFieldName: 'FiberID', // Important for creating new related records
+                parentItemId: currentSelectedFiberId,
+                addNewButtonId: 'addNewMolWeightBtn', // Button to add new MW data for the *currentSelectedFiberId*
+                modalConfig: {
+                    propertyKey: 'MolecularWeight', modelName: 'Fiber_MolecularWeight',
+                    toDictFunc: null, // Define if needed, else null
+                    apiRouteName: `fibers/${currentSelectedFiberId}/molecular_weights`, // Base API for creating MW for *this* fiber
+                    formFields: fiberMolecularWeightFormFields, // Ensure this is defined
+                    modalTitle: 'Fiber Molecular Weight',
+                    parentIdFieldName: 'FiberID',
+                    modalElementId: 'MolecularWeightModal', modalContentElementId: 'MolecularWeightModalContent'
+                },
+                callbackAfterAction: fetchAndDisplayFiberMolecularWeight // Refresh this table
+            };
+            fetchAndDisplayRelatedProperties(molecularWeightConfig);
+        }
+
+        // -- Tab: Thermal Properties --
+        const fiberDscFormFields = [
+            { name: 'TestMethod_Standard', label: 'Test Method/Standard', type: 'text' },
+            { name: 'HeatingRate', label: 'Heating Rate (°C/min)', type: 'number', step: 'any' }, { name: 'Atmosphere', label: 'Atmosphere', type: 'text' },
+            { name: 'MeltingTemperature_Tm', label: 'Melting Temp (°C)', type: 'number', step: 'any' }, { name: 'EnthalpyOfFusion', label: 'Enthalpy of Fusion (J/g)', type: 'number', step: 'any' },
+            { name: 'CrystallizationTemperature_Tc', label: 'Crystallization Temp (°C)', type: 'number', step: 'any' }, { name: 'EnthalpyOfCrystallization', label: 'Enthalpy of Cryst. (J/g)', type: 'number', step: 'any' },
+            { name: 'GlassTransitionTemperature_Tg', label: 'Glass Transition Temp (°C)', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const fiberTgaFormFields = [
+            { name: 'TestMethod_Standard', label: 'Test Method/Standard', type: 'text' },
+            { name: 'HeatingRate', label: 'Heating Rate (°C/min)', type: 'number', step: 'any' }, { name: 'Atmosphere', label: 'Atmosphere', type: 'text' },
+            { name: 'DecompositionOnsetTemperature', label: 'Decomp. Onset Temp (°C)', type: 'number', step: 'any' },
+            { name: 'TemperatureAtMaxDecompositionRate', label: 'Temp at Max Decomp. Rate (°C)', type: 'number', step: 'any' },
+            { name: 'ResidueAtTargetTemperature', label: 'Residue at Target Temp (%)', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const fiberThermalConductivityFormFields = [
+            { name: 'TestMethod', label: 'Test Method', type: 'text' }, { name: 'TestTemperature', label: 'Test Temp (°C)', type: 'number', step: 'any' },
+            { name: 'ThermalConductivity', label: 'Thermal Conductivity (W/m·K)', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+        function setupFiberThermalTab() {
+            const tabContent = document.getElementById('fiber_thermal_content');
+            tabContent.innerHTML = `
+                <p class="text-sm text-gray-600 mb-4">Displaying thermal properties for Fiber: <span id="selectedFiberNameThermal" class="font-semibold text-blue-600">${currentSelectedFiberName || 'N/A'}</span>.</p>
+                ${generatePropertySectionHTML('DSC', 'Thermal_DSC', 'DSC data relates to phase transitions and thermal stability.')}
+                ${generatePropertySectionHTML('TGA', 'Thermal_TGA', 'TGA data shows weight loss as a function of temperature.')}
+                ${generatePropertySectionHTML('ThermalConductivity', 'Thermal_Conductivity', 'Thermal conductivity measurements.')}
+                <!-- Modals for each property type -->
+                <div id="DSCModal" class="modal hidden"><div id="DSCModalContent" class="modal-content max-w-2xl"></div></div>
+                <div id="TGAModal" class="modal hidden"><div id="TGAModalContent" class="modal-content max-w-2xl"></div></div>
+                <div id="ThermalConductivityModal" class="modal hidden"><div id="ThermalConductivityModalContent" class="modal-content max-w-2xl"></div></div>
+            `;
+            if (currentSelectedFiberId) {
+                document.getElementById('selectedFiberNameThermal').textContent = currentSelectedFiberName;
+
+                fetchAndDisplayRelatedProperties(createFiberPropertyConfig('DSC', fiberDscFormFields, 'thermal_dsc', fetchAndDisplayFiberThermalDSC));
+                fetchAndDisplayRelatedProperties(createFiberPropertyConfig('TGA', fiberTgaFormFields, 'thermal_tga', fetchAndDisplayFiberThermalTGA));
+                fetchAndDisplayRelatedProperties(createFiberPropertyConfig('ThermalConductivity', fiberThermalConductivityFormFields, 'thermal_conductivity', fetchAndDisplayFiberThermalConductivity));
+            } else {
+                document.getElementById('dscTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber from "Basic Info" tab to view DSC data.</p>';
+                document.getElementById('tgaTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber from "Basic Info" tab to view TGA data.</p>';
+                document.getElementById('thermalconductivityTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber to view thermal conductivity data.</p>';
+            }
+        }
+        // Helper functions to avoid repetition in setupFiberThermalTab and similar tabs
+        function fetchAndDisplayFiberThermalDSC() { fetchAndDisplayRelatedProperties(createFiberPropertyConfig('DSC', fiberDscFormFields, 'thermal_dsc', fetchAndDisplayFiberThermalDSC)); }
+        function fetchAndDisplayFiberThermalTGA() { fetchAndDisplayRelatedProperties(createFiberPropertyConfig('TGA', fiberTgaFormFields, 'thermal_tga', fetchAndDisplayFiberThermalTGA)); }
+        function fetchAndDisplayFiberThermalConductivity() { fetchAndDisplayRelatedProperties(createFiberPropertyConfig('ThermalConductivity', fiberThermalConductivityFormFields, 'thermal_conductivity', fetchAndDisplayFiberThermalConductivity)); }
+
+
+        // -- Tab: Mechanical Properties --
+        const fiberTensileFormFields = [ // Defined, no change
+            { name: 'TestMethod_Standard', label: 'Test Method/Standard', type: 'text' },
+            { name: 'TestTemperature', label: 'Test Temp (°C)', type: 'number', step: 'any' },
+            { name: 'StrainRate', label: 'Strain Rate (/min or /s)', type: 'number', step: 'any' },
+            { name: 'GaugeLength', label: 'Gauge Length (mm)', type: 'number', step: 'any' },
+            { name: 'TensileStrength', label: 'Tensile Strength (GPa or MPa or cN/dtex)', type: 'number', step: 'any' },
+            { name: 'TensileModulus', label: 'Tensile Modulus (GPa or cN/dtex)', type: 'number', step: 'any' },
+            { name: 'ElongationAtBreak', label: 'Elongation at Break (%)', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const fiberCreepFormFields = [
+            { name: 'TestMethod_Standard', label: 'Test Method/Standard', type: 'text' },
+            { name: 'TestTemperature', label: 'Test Temp (°C)', type: 'number', step: 'any' },
+            { name: 'AppliedStress', label: 'Applied Stress (MPa or GPa)', type: 'number', step: 'any' },
+            { name: 'TestDuration', label: 'Test Duration (hours)', type: 'number', step: 'any' },
+            { name: 'CreepStrain', label: 'Creep Strain (%)', type: 'number', step: 'any' },
+            { name: 'CreepRate', label: 'Creep Rate (%/hour)', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const fiberDynamicTensileFormFields = [
+            { name: 'TestMethod_Equipment', label: 'Test Method/Equipment', type: 'text' },
+            { name: 'StrainRate', label: 'Strain Rate (/s)', type: 'number', step: 'any' },
+            { name: 'TestTemperature', label: 'Test Temp (°C)', type: 'number', step: 'any' },
+            { name: 'DynamicTensileStrength', label: 'Dynamic Tensile Strength (GPa or MPa)', type: 'number', step: 'any' },
+            { name: 'DynamicTensileModulus', label: 'Dynamic Tensile Modulus (GPa)', type: 'number', step: 'any' },
+            { name: 'ElongationAtBreak_Dynamic', label: 'Dynamic Elong. at Break (%)', type: 'number', step: 'any' },
+            { name: 'EnergyAbsorption', label: 'Energy Absorption (J/g or J/m)', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+        function setupFiberMechanicalTab() {
+            const tabContent = document.getElementById('fiber_mechanical_content');
+             tabContent.innerHTML = `
+                <p class="text-sm text-gray-600 mb-4">Displaying mechanical properties for Fiber: <span id="selectedFiberNameMechanical" class="font-semibold text-blue-600">${currentSelectedFiberName || 'N/A'}</span>.</p>
+                ${generatePropertySectionHTML('Tensile', 'Tensile_Properties', 'Quasi-static tensile properties.')}
+                ${generatePropertySectionHTML('Creep', 'Creep_Properties', 'Creep and stress relaxation data.')}
+                ${generatePropertySectionHTML('DynamicTensile', 'DynamicTensile_Properties', 'High strain rate tensile properties.')}
+                <div id="TensileModal" class="modal hidden"><div id="TensileModalContent" class="modal-content max-w-2xl"></div></div>
+                <div id="CreepModal" class="modal hidden"><div id="CreepModalContent" class="modal-content max-w-2xl"></div></div>
+                <div id="DynamicTensileModal" class="modal hidden"><div id="DynamicTensileModalContent" class="modal-content max-w-2xl"></div></div>
+            `;
+            if (currentSelectedFiberId) {
+                document.getElementById('selectedFiberNameMechanical').textContent = currentSelectedFiberName;
+                fetchAndDisplayRelatedProperties(createFiberPropertyConfig('Tensile', fiberTensileFormFields, 'tensile_properties', fetchAndDisplayFiberTensile));
+                fetchAndDisplayRelatedProperties(createFiberPropertyConfig('Creep', fiberCreepFormFields, 'creep_properties', fetchAndDisplayFiberCreep));
+                fetchAndDisplayRelatedProperties(createFiberPropertyConfig('DynamicTensile', fiberDynamicTensileFormFields, 'dynamic_tensile_properties', fetchAndDisplayFiberDynamicTensile));
+            } else {
+                // Show placeholder messages if no fiber selected
+                document.getElementById('tensileTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber to view tensile properties.</p>';
+                document.getElementById('creepTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber to view creep properties.</p>';
+                document.getElementById('dynamictensileTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber to view dynamic tensile properties.</p>';
+            }
+        }
+        function fetchAndDisplayFiberTensile() { fetchAndDisplayRelatedProperties(createFiberPropertyConfig('Tensile', fiberTensileFormFields, 'tensile_properties', fetchAndDisplayFiberTensile));}
+        function fetchAndDisplayFiberCreep() { fetchAndDisplayRelatedProperties(createFiberPropertyConfig('Creep', fiberCreepFormFields, 'creep_properties', fetchAndDisplayFiberCreep));}
+        function fetchAndDisplayFiberDynamicTensile() { fetchAndDisplayRelatedProperties(createFiberPropertyConfig('DynamicTensile', fiberDynamicTensileFormFields, 'dynamic_tensile_properties', fetchAndDisplayFiberDynamicTensile));}
+
+        // Generic helper to create config for fiber sub-properties (no change to this helper itself)
+        function createFiberPropertyConfig(propKey, formFields, apiSubRoute, callback) {
+            const modelName = `Fiber_${propKey.replace(/([A-Z])/g, '_$1').replace(/^_/, '')}`; // e.g. Fiber_Thermal_DSC
+            return {
+                containerId: `${propKey.toLowerCase()}TableContainer`,
+                apiUrl: `/api/fibers/${currentSelectedFiberId}/${apiSubRoute}`,
+                columns: formFields.map(f => ({ header: f.label, field: f.name, renderFunc: (val, item) => {
+                    if (f.type === 'date') return safe_isoformat(val);
+                    if (f.type === 'number') return decimal_to_str_or_none(val);
+                    return val !== null && val !== undefined ? val : 'N/A';
+                }})).slice(0, 4), // Show first 4 fields in table, adjust as needed
+                pkField: 'TestID', // Assuming all these sub-tables use TestID
+                entityNameFriendly: `${propKey.replace(/([A-Z])/g, ' $1').trim()} Data`,
+                parentIdFieldName: 'FiberID',
+                parentItemId: currentSelectedFiberId,
+                addNewButtonId: `addNew${propKey}Btn`,
+                modalConfig: {
+                    propertyKey: propKey, modelName: modelName, toDictFunc: null,
+                    apiRouteName: `fibers/${currentSelectedFiberId}/${apiSubRoute}`, // For creating new items
+                    formFields: formFields,
+                    modalTitle: `${propKey.replace(/([A-Z])/g, ' $1').trim()}`,
+                    parentIdFieldName: 'FiberID',
+                    modalElementId: `${propKey}Modal`, modalContentElementId: `${propKey}ModalContent`
+                },
+                callbackAfterAction: callback
+            };
+        }
+         // Helper to generate common HTML structure for property sections
+        function generatePropertySectionHTML(keyName, modelNameSuffix, description) {
+            return `
+                <div class="sub-section">
+                    <div class="sub-section-header">
+                        <h4 class="sub-section-title">${keyName.replace(/([A-Z])/g, ' $1').trim()}</h4>
+                        <button id="addNew${keyName}Btn" class="sub-action-button hidden">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                            Add New
+                        </button>
+                    </div>
+                    <p class="text-xs text-gray-500 mb-3">${description}</p>
+                    <div id="${keyName.toLowerCase()}TableContainer">
+                        <p class="text-center text-gray-500 py-4">Select a fiber from "Basic Info" tab first.</p>
+                    </div>
+                </div>`;
+        }
+
+
+        // --- Microstructure Module ---
+        const fiberPhaseStructureFormFields = [ // Defined, no change
+            { name: 'TestMethod', label: 'Test Method (e.g., WAXS, SAXS)', type: 'text' },
+            { name: 'CrystalSystem', label: 'Crystal System', type: 'text' },
+            { name: 'LatticeParameters', label: 'Lattice Parameters (a,b,c,alpha,beta,gamma)', type: 'text' },
+            { name: 'PercentCrystallinity', label: 'Crystallinity (%)', type: 'number', step: 'any' },
+            { name: 'CrystalSize_Lc', label: 'Crystal Size Lc (nm)', type: 'number', step: 'any' },
+            { name: 'LongPeriod_Lp', label: 'Long Period Lp (nm, from SAXS)', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes/Raw Data Path', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const fiberOrientationCrystallinityFormFields = [
+            { name: 'TestMethod', label: 'Test Method (e.g., WAXS Pole Figure, Birefringence)', type: 'text' },
+            { name: 'OrientationParameter_fc', label: 'Herman\'s Orientation Factor (fc)', type: 'number', step: 'any' },
+            { name: 'Birefringence', label: 'Birefringence', type: 'number', step: 'any' },
+            { name: 'DichroicRatio', label: 'Dichroic Ratio', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const fiberSemFormFields = [ // Note: Primary Key for SEM is ImageID, not TestID. Adjust pkField in config.
+            { name: 'MicroscopyEquipment', label: 'Microscopy Equipment', type: 'text' },
+            { name: 'Magnification', label: 'Magnification (e.g., 5000x)', type: 'text' },
+            { name: 'AcceleratingVoltage', label: 'Accelerating Voltage (kV)', type: 'number', step: 'any' },
+            { name: 'ImagePath', label: 'Image Path/Reference', type: 'text', required: true, colSpan: 2 }, // Assuming path stored as text
+            { name: 'Observations', label: 'Observations (morphology, defects)', type: 'textarea', rows: 4, colSpan: 2 },
+            { name: 'TestDate', label: 'Test Date', type: 'date' }
+        ];
+        const fiberXpsFormFields = [
+            { name: 'Equipment', label: 'XPS Equipment', type: 'text' },
+            { name: 'XraySource', label: 'X-ray Source (e.g., Al K-alpha)', type: 'text' },
+            { name: 'SurveyScanInfo', label: 'Survey Scan Info (pass energy, elements)', type: 'textarea', rows: 2, colSpan: 2 },
+            { name: 'HighResScanInfo_C1s', label: 'High-Res Scan C1s (deconvolution)', type: 'textarea', rows: 2, colSpan: 2 },
+            { name: 'HighResScanInfo_O1s', label: 'High-Res Scan O1s (deconvolution)', type: 'textarea', rows: 2, colSpan: 2 },
+            { name: 'AtomicConcentration_C', label: 'Atomic Conc. C (%)', type: 'number', step: 'any' },
+            { name: 'AtomicConcentration_O', label: 'Atomic Conc. O (%)', type: 'number', step: 'any' },
+            { name: 'AtomicConcentration_N', label: 'Atomic Conc. N (%)', type: 'number', step: 'any' },
+            { name: 'OtherElementsDetected', label: 'Other Elements Detected', type: 'text' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+        function setupMicrostructureModule() {
+            contentArea.innerHTML = `
+                <div class="mb-4 border-b border-gray-200">
+                    <nav id="microstructureTabs" class="-mb-px flex space-x-2" aria-label="Tabs">
+                        <button class="tab-button active" data-tab="micro_phase">Phase Structure (XRD/SAXS)</button>
+                        <button class="tab-button" data-tab="micro_orientation">Orientation & Crystallinity</button>
+                        <button class="tab-button" data-tab="micro_sem">Microscopic Morphology (SEM)</button>
+                        <button class="tab-button" data-tab="micro_xps">Surface Properties (XPS)</button>
+                    </nav>
+                </div>
+                <div id="microstructureTabContentContainer">
+                    <div id="micro_phase_content" class="tab-content active"></div>
+                    <div id="micro_orientation_content" class="tab-content"></div>
+                    <div id="micro_sem_content" class="tab-content"></div>
+                    <div id="micro_xps_content" class="tab-content"></div>
+                </div>
+                <!-- Modals for each property type -->
+                <div id="PhaseStructureModal" class="modal hidden"><div id="PhaseStructureModalContent" class="modal-content max-w-2xl"></div></div>
+                <div id="OrientationCrystallinityModal" class="modal hidden"><div id="OrientationCrystallinityModalContent" class="modal-content max-w-2xl"></div></div>
+                <div id="SEMModal" class="modal hidden"><div id="SEMModalContent" class="modal-content max-w-2xl"></div></div>
+                <div id="XPSModal" class="modal hidden"><div id="XPSModalContent" class="modal-content max-w-3xl"></div></div>
+            `;
+            initializeTabs('microstructureTabs', 'microstructureTabContentContainer');
+            setupMicroPhaseTab(); // Default tab
+        }
+
+        function setupMicroPhaseTab() {
+            const tabContent = document.getElementById('micro_phase_content');
+            tabContent.innerHTML = `
+                <p class="text-sm text-gray-600 mb-4">Displaying Phase Structure properties for Fiber: <span class="font-semibold text-blue-600">${currentSelectedFiberName || 'N/A'}</span>.</p>
+                ${generatePropertySectionHTML('PhaseStructure', 'Microstructure_PhaseStructure', 'Data from WAXS, SAXS for crystal structure, phase content.')}`;
+
+            if (currentSelectedFiberId) {
+                fetchAndDisplayRelatedProperties(createFiberPropertyConfig('PhaseStructure', fiberPhaseStructureFormFields, 'microstructure_phase', setupMicroPhaseTab));
+            } else {
+                 document.getElementById('phasestructureTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber from "Basic Info" tab first.</p>';
+            }
+        }
+
+        function setupMicroOrientationTab() {
+            const tabContent = document.getElementById('micro_orientation_content');
+            tabContent.innerHTML = `
+                <p class="text-sm text-gray-600 mb-4">Displaying Orientation & Crystallinity for Fiber: <span class="font-semibold text-blue-600">${currentSelectedFiberName || 'N/A'}</span>.</p>
+                ${generatePropertySectionHTML('OrientationCrystallinity', 'Microstructure_OrientationCrystallinity', 'Data from WAXS Pole Figures, Birefringence, FTIR Dichroism.')}`;
+
+            if (currentSelectedFiberId) {
+                fetchAndDisplayRelatedProperties(createFiberPropertyConfig('OrientationCrystallinity', fiberOrientationCrystallinityFormFields, 'microstructure_orientation', setupMicroOrientationTab));
+            } else {
+                document.getElementById('orientationcrystallinityTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber from "Basic Info" tab first.</p>';
+            }
+        }
+
+        function setupMicroSemTab() {
+            const tabContent = document.getElementById('micro_sem_content');
+            tabContent.innerHTML = `
+                <p class="text-sm text-gray-600 mb-4">Displaying SEM images for Fiber: <span class="font-semibold text-blue-600">${currentSelectedFiberName || 'N/A'}</span>.</p>
+                ${generatePropertySectionHTML('SEM', 'Microstructure_SEM', 'Scanning Electron Microscopy images and observations.')}`;
+
+            if (currentSelectedFiberId) {
+                // Special PK name for SEM
+                const semConfig = createFiberPropertyConfig('SEM', fiberSemFormFields, 'microstructure_sem', setupMicroSemTab);
+                semConfig.pkField = 'ImageID';
+                semConfig.modalConfig.pkName = 'ImageID'; // Ensure modal also knows the PK
+                fetchAndDisplayRelatedProperties(semConfig);
+            } else {
+                 document.getElementById('semTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber from "Basic Info" tab first.</p>';
+            }
+        }
+
+        function setupMicroXpsTab() {
+            const tabContent = document.getElementById('micro_xps_content');
+            tabContent.innerHTML = `
+                 <p class="text-sm text-gray-600 mb-4">Displaying XPS data for Fiber: <span class="font-semibold text-blue-600">${currentSelectedFiberName || 'N/A'}</span>.</p>
+                ${generatePropertySectionHTML('XPS', 'Microstructure_XPS', 'X-ray Photoelectron Spectroscopy data for surface elemental composition.')}`;
+
+            if (currentSelectedFiberId) {
+                fetchAndDisplayRelatedProperties(createFiberPropertyConfig('XPS', fiberXpsFormFields, 'microstructure_xps', setupMicroXpsTab));
+            } else {
+                document.getElementById('xpsTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a fiber from "Basic Info" tab first.</p>';
+            }
+        }
+
+        // --- Resin & Interface Performance Module ---
+        const resinFormFields = [ // Defined, no change
+            { name: 'ResinName', label: 'Resin Name', type: 'text', required: true },
+            { name: 'Manufacturer', label: 'Manufacturer', type: 'text' },
+            { name: 'ProductionDate', label: 'Production Date', type: 'date' },
+            { name: 'IntrinsicViscosity', label: 'Intrinsic Viscosity (dL/g)', type: 'number', step: 'any' },
+            { name: 'MolecularWeight_Mn', label: 'Mn (g/mol)', type: 'number', step: 'any' },
+            { name: 'MolecularWeight_Mw', label: 'Mw (g/mol)', type: 'number', step: 'any' },
+            { name: 'MolecularWeight_Mz', label: 'Mz (g/mol)', type: 'number', step: 'any' },
+            { name: 'PolydispersityIndex', label: 'PDI', type: 'number', step: 'any' },
+            { name: 'ComonomerType', label: 'Comonomer Type', type: 'text' },
+            { name: 'ComonomerContent', label: 'Comonomer Content (%)', type: 'number', step: 'any' },
+            { name: 'AdditiveType', label: 'Additive Type', type: 'text' },
+            { name: 'AdditiveContent', label: 'Additive Content (%)', type: 'number', step: 'any' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const resinTensileFormFields = [
+            { name: 'SamplePreparation', label: 'Sample Preparation', type: 'textarea', rows: 2, colSpan: 2 },
+            { name: 'TestMethod_Standard', label: 'Test Method/Standard', type: 'text' },
+            { name: 'TestTemperature', label: 'Test Temp (°C)', type: 'number', step: 'any' },
+            { name: 'StrainRate', label: 'Strain Rate (/min or /s)', type: 'number', step: 'any' },
+            { name: 'TensileStrength', label: 'Tensile Strength (MPa)', type: 'number', step: 'any' },
+            { name: 'TensileModulus', label: 'Tensile Modulus (GPa or MPa)', type: 'number', step: 'any' },
+            { name: 'ElongationAtBreak', label: 'Elongation at Break (%)', type: 'number', step: 'any' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const interfacePropertiesFormFields = [
+            { name: 'FiberID', label: 'Fiber', type: 'select', optionsUrl: '/api/fibers', optionValue: 'FiberID', optionTextFields: ['FiberName'], required: true },
+            { name: 'ResinID', label: 'Resin', type: 'select', optionsUrl: '/api/resins', optionValue: 'ResinID', optionTextFields: ['ResinName'], required: true },
+            { name: 'TestMethod', label: 'Test Method (e.g., Microbond, Pull-out)', type: 'text', required: true },
+            { name: 'TestTemperature', label: 'Test Temp (°C)', type: 'number', step: 'any' },
+            { name: 'InterfacialShearStrength_IFSS', label: 'IFSS (MPa)', type: 'number', step: 'any' },
+            { name: 'FailureMode', label: 'Failure Mode', type: 'text' },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+
+        function setupResinInterfaceModule() {
+            contentArea.innerHTML = `
+                <div class="mb-4 border-b border-gray-200">
+                    <nav id="resinInterfaceTabs" class="-mb-px flex space-x-2" aria-label="Tabs">
+                        <button class="tab-button active" data-tab="resin_basic">Resin Basic Information</button>
+                        <button class="tab-button" data-tab="resin_mechanical">Resin Mechanical Properties</button>
+                        <button class="tab-button" data-tab="resin_interface_perf">Fiber/Resin Interface Performance</button>
+                    </nav>
+                </div>
+                <div id="resinInterfaceTabContentContainer">
+                    <div id="resin_basic_content" class="tab-content active"></div>
+                    <div id="resin_mechanical_content" class="tab-content"></div>
+                    <div id="resin_interface_perf_content" class="tab-content"></div>
+                </div>
+                <div id="ResinModal" class="modal hidden"><div id="ResinModalContent" class="modal-content max-w-3xl"></div></div>
+                <div id="ResinTensileModal" class="modal hidden"><div id="ResinTensileModalContent" class="modal-content max-w-2xl"></div></div>
+                <div id="InterfacePropertyModal" class="modal hidden"><div id="InterfacePropertyModalContent" class="modal-content max-w-3xl"></div></div>
+            `;
+            initializeTabs('resinInterfaceTabs', 'resinInterfaceTabContentContainer');
+            setupResinBasicTab(); // Default tab
+        }
+
+        function setupResinBasicTab() {
+            const tabContent = document.getElementById('resin_basic_content');
+            tabContent.innerHTML = `
+                <div class="mb-6 flex justify-end">
+                    <button id="addNewResinBtn" class="action-button">Add New Resin</button>
+                </div>
+                <div id="resinListTableContainer" class="overflow-x-auto bg-white p-2 rounded-lg shadow"></div>`;
+
+            const tableConfig = {
+                containerId: 'resinListTableContainer',
+                apiUrl: '/api/resins',
+                columns: [
+                    { header: 'ID', field: 'ResinID' },
+                    { header: 'Name', field: 'ResinName', renderFunc: val => `<span class="font-semibold">${val}</span>` },
+                    { header: 'Manufacturer', field: 'Manufacturer' },
+                    { header: 'IV (dL/g)', field: 'IntrinsicViscosity', renderFunc: val => decimal_to_str_or_none(val) },
+                    { header: 'Actions', field: 'ResinID', renderFunc: (id, item) => `<button class="sub-action-button text-xs manage-resin-props-btn" data-resinid="${id}" data-resinname="${item.ResinName}">Manage Mech. Props</button>` }
+                ],
+                actions: [
+                    { label: 'Edit', class: 'action-link-edit ml-0', onClick: (id, item, config) => {
+                        openPropertyCrudModal(config.modalConfig.key, config.modalConfig.modelName, null, config.modalConfig.apiRouteName, config.modalConfig.formFields, config.modalConfig.title, null, item, config.pkField, null, config.modalConfig.modalId, config.modalConfig.contentId, config.onAddCallback);
+                    }},
+                    { label: 'Delete', class: 'action-link-delete', onClick: async (id, item, config) => {
+                        if (confirm(`Are you sure you want to delete resin "${item.ResinName}"? This may affect related spinning processes and composites.`)) {
+                            try {
+                                await apiFetch(`/api/resins/${id}`, { method: 'DELETE' });
+                                showUIMessage('Resin deleted.', 'success');
+                                renderMainEntityTable(config);
+                                currentSelectedResinId = null;
+                                // Potentially clear/reset other dependent views if any
+                            } catch (error) { /* Handled by apiFetch */ }
+                        }
+                    }}
+                ],
+                pkField: 'ResinID',
+                entityNameFriendly: 'Resin',
+                addNewButtonId: 'addNewResinBtn',
+                modalConfig: {
+                    key: 'Resin', modelName: 'Resins', apiRouteName: 'resins',
+                    formFields: resinFormFields, title: 'Resin',
+                    modalId: 'ResinModal', contentId: 'ResinModalContent'
+                }
+            };
+            renderMainEntityTable(tableConfig);
+
+            tabContent.querySelector('#resinListTableContainer').addEventListener('click', function(event){
+                if(event.target && event.target.classList.contains('manage-resin-props-btn')){
+                    currentSelectedResinId = event.target.dataset.resinid;
+                    currentSelectedResinName = event.target.dataset.resinname;
+                    // Switch to mechanical properties tab
+                    document.querySelector('#resinInterfaceTabs button[data-tab="resin_mechanical"]').click();
+                }
+            });
+        }
+
+        function setupResinMechanicalTab() {
+            const tabContent = document.getElementById('resin_mechanical_content');
+            tabContent.innerHTML = `
+                <p class="text-sm text-gray-600 mb-4">Displaying mechanical properties for Resin: <span id="selectedResinNameMech" class="font-semibold text-blue-600">${currentSelectedResinName || 'N/A'}</span>.</p>
+                ${generatePropertySectionHTML('ResinTensile', 'Resin_Tensile_Properties', 'Tensile properties of bulk resin.')}`;
+
+            if (currentSelectedResinId) {
+                document.getElementById('selectedResinNameMech').textContent = currentSelectedResinName;
+                fetchAndDisplayRelatedProperties(createResinPropertyConfig('ResinTensile', resinTensileFormFields, 'tensile_properties', setupResinMechanicalTab));
+            } else {
+                document.getElementById('resintensileTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a resin from "Basic Information" tab first.</p>';
+            }
+        }
+
+        function createResinPropertyConfig(propKey, formFields, apiSubRoute, callback) {
+            return {
+                containerId: `${propKey.toLowerCase()}TableContainer`,
+                apiUrl: `/api/resins/${currentSelectedResinId}/${apiSubRoute}`,
+                columns: formFields.map(f => ({ header: f.label, field: f.name, renderFunc: (val) => (f.type === 'date' ? safe_isoformat(val) : (f.type === 'number' ? decimal_to_str_or_none(val) : val || 'N/A')) })).slice(0, 4),
+                pkField: 'TestID',
+                entityNameFriendly: `${propKey.replace(/([A-Z])/g, ' $1').trim()} Data`,
+                parentIdFieldName: 'ResinID',
+                parentItemId: currentSelectedResinId,
+                addNewButtonId: `addNew${propKey}Btn`,
+                modalConfig: {
+                    propertyKey: propKey, modelName: `Resin_${propKey.replace(/([A-Z])/g, '_$1').replace(/^_/, '')}`,
+                    apiRouteName: `resins/${currentSelectedResinId}/${apiSubRoute}`, formFields: formFields,
+                    modalTitle: `${propKey.replace(/([A-Z])/g, ' $1').trim()}`, parentIdFieldName: 'ResinID',
+                    modalElementId: `${propKey}Modal`, modalContentElementId: `${propKey}ModalContent`
+                },
+                callbackAfterAction: callback
+            };
+        }
+
+        function setupResinInterfacePropertiesTab() {
+            const tabContent = document.getElementById('resin_interface_perf_content');
+             tabContent.innerHTML = `
+                <div class="module-description">
+                    Fiber/Resin interfacial properties data.
+                </div>
+                <div class="mb-6 flex justify-end">
+                    <button id="addNewInterfacePropertyBtn" class="action-button">Add New Interface Test</button>
+                </div>
+                <div id="interfacePropertyTableContainer" class="overflow-x-auto bg-white p-2 rounded-lg shadow"></div>`;
+
+            const tableConfig = {
+                containerId: 'interfacePropertyTableContainer',
+                apiUrl: '/api/interfacial_properties',
+                columns: [
+                    { header: 'Test ID', field: 'TestID' },
+                    { header: 'Fiber', field: 'FiberName' }, // Assuming FiberName and ResinName are returned by API
+                    { header: 'Resin', field: 'ResinName' },
+                    { header: 'Method', field: 'TestMethod' },
+                    { header: 'IFSS (MPa)', field: 'InterfacialShearStrength_IFSS', renderFunc: val => decimal_to_str_or_none(val) }
+                ],
+                actions: [
+                     { label: 'Edit', class: 'action-link-edit', onClick: (id, item, config) => {
+                        openPropertyCrudModal(config.modalConfig.key, config.modalConfig.modelName, null, config.modalConfig.apiRouteName, config.modalConfig.formFields, config.modalConfig.title, null, item, config.pkField, null, config.modalConfig.modalId, config.modalConfig.contentId, config.onAddCallback);
+                    }},
+                    { label: 'Delete', class: 'action-link-delete', onClick: async (id, item, config) => {
+                        if (confirm(`Are you sure you want to delete Interface Property Test ID ${id}?`)) {
+                            try {
+                                await apiFetch(`/api/interfacial_properties/${id}`, { method: 'DELETE' });
+                                showUIMessage('Interface property deleted.', 'success');
+                                renderMainEntityTable(config);
+                            } catch (error) { /* Handled by apiFetch */ }
+                        }
+                    }}
+                ],
+                pkField: 'TestID',
+                entityNameFriendly: 'Interface Property',
+                addNewButtonId: 'addNewInterfacePropertyBtn',
+                modalConfig: {
+                    key: 'InterfaceProperty', modelName: 'FiberResin_Interfacial_Properties',
+                    apiRouteName: 'interfacial_properties',
+                    formFields: interfacePropertiesFormFields, title: 'Interface Property',
+                    modalId: 'InterfacePropertyModal', contentId: 'InterfacePropertyModalContent'
+                }
+            };
+            renderMainEntityTable(tableConfig);
+        }
+
+        // --- Composite Performance Module ---
+        const compositeFormFields = [ // Defined, no change
+            { name: 'CompositeName', label: 'Composite Name', type: 'text', required: true },
+            { name: 'FiberID', label: 'Fiber', type: 'select', optionsUrl: '/api/fibers', optionValue: 'FiberID', optionTextFields: ['FiberName'], required: true },
+            { name: 'ResinID', label: 'Resin (Matrix)', type: 'select', optionsUrl: '/api/resins', optionValue: 'ResinID', optionTextFields: ['ResinName'], required: true },
+            { name: 'ManufacturingProcess', label: 'Manufacturing Process', type: 'text' },
+            { name: 'FiberVolumeFraction', label: 'Fiber Volume Fraction (%)', type: 'number', step: 'any' },
+            { name: 'VoidContent', label: 'Void Content (%)', type: 'number', step: 'any' },
+            { name: 'PlyStackingSequence', label: 'Ply Stacking Sequence (e.g., [0/90]s)', type: 'text' },
+            { name: 'CuringCycleDetails', label: 'Curing Cycle Details', type: 'textarea', rows: 3, colSpan: 2 },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+        const compositeTensileFormFields = [
+            { name: 'TestMethod_Standard', label: 'Test Method/Standard', type: 'text' },
+            { name: 'TestDirection', label: 'Test Direction (e.g., 0-deg, 90-deg)', type: 'text' },
+            { name: 'TestTemperature', label: 'Test Temp (°C)', type: 'number', step: 'any' },
+            { name: 'StrainRate', label: 'Strain Rate (/min or /s)', type: 'number', step: 'any' },
+            { name: 'TensileStrength', label: 'Tensile Strength (MPa)', type: 'number', step: 'any' },
+            { name: 'TensileModulus', label: 'Tensile Modulus (GPa)', type: 'number', step: 'any' },
+            { name: 'PoissonRatio', label: 'Poisson Ratio (v12)', type: 'number', step: 'any' },
+            { name: 'ElongationAtBreak', label: 'Elongation at Break (%)', type: 'number', step: 'any' },
+            { name: 'FailureMode', label: 'Failure Mode', type: 'textarea', rows: 2, colSpan: 2 },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+        function setupCompositePerformanceModule() {
+            contentArea.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">Composites</h3>
+                            <button id="addNewCompositeBtn" class="action-button text-sm">Add Composite</button>
+                        </div>
+                        <div id="compositeListContainer"></div>
+                    </div>
+                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">Tensile Properties for <span id="selectedCompositeNameTensile" class="text-blue-600">N/A</span></h3>
+                            <button id="addNewCompositeTensileBtn" class="sub-action-button hidden">Add Tensile Data</button>
+                        </div>
+                        <div id="compositeTensileTableContainer">
+                            <p class="text-center text-gray-500 py-4">Select a composite to view its tensile properties.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="CompositeModal" class="modal hidden"><div id="CompositeModalContent" class="modal-content max-w-3xl"></div></div>
+                <div id="CompositeTensileModal" class="modal hidden"><div id="CompositeTensileModalContent" class="modal-content max-w-2xl"></div></div>`;
+
+            const compositeTableConfig = {
+                containerId: 'compositeListContainer',
+                apiUrl: '/api/composites',
+                columns: [
+                    { header: 'ID', field: 'CompositeID' },
+                    { header: 'Name', field: 'CompositeName', renderFunc: val => `<span class="font-semibold">${val}</span>` },
+                    { header: 'Fiber', field: 'FiberName' }, { header: 'Resin', field: 'ResinName' }, // Assuming these are returned
+                    { header: 'Actions', field: 'CompositeID', renderFunc: (id, item) => `<button class="sub-action-button text-xs manage-composite-tensile-btn" data-compositeid="${id}" data-compositename="${item.CompositeName}">Manage Tensile</button>` }
+                ],
+                actions: [
+                    { label: 'Edit', class: 'action-link-edit ml-0', onClick: (id, item, config) => openPropertyCrudModal(config.modalConfig.key, config.modalConfig.modelName, null, config.modalConfig.apiRouteName, config.modalConfig.formFields, config.modalConfig.title, null, item, config.pkField, null, config.modalConfig.modalId, config.modalConfig.contentId, config.onAddCallback) },
+                    { label: 'Delete', class: 'action-link-delete', onClick: async (id, item, config) => {
+                        if (confirm(`Are you sure you want to delete composite "${item.CompositeName}"?`)) {
+                            try {
+                                await apiFetch(`/api/composites/${id}`, { method: 'DELETE' });
+                                showUIMessage('Composite deleted.', 'success');
+                                renderMainEntityTable(config);
+                                currentSelectedCompositeId = null;
+                                document.getElementById('selectedCompositeNameTensile').textContent = 'N/A';
+                                setTableContainerMessage(document.getElementById('compositeTensileTableContainer'), 'nodata', 5);
+                            } catch (error) { /* Handled */ }
+                        }
+                    }}
+                ],
+                pkField: 'CompositeID',
+                entityNameFriendly: 'Composite',
+                addNewButtonId: 'addNewCompositeBtn',
+                modalConfig: {
+                    key: 'Composite', modelName: 'Composites', apiRouteName: 'composites',
+                    formFields: compositeFormFields, title: 'Composite',
+                    modalId: 'CompositeModal', contentId: 'CompositeModalContent'
+                }
+            };
+            renderMainEntityTable(compositeTableConfig);
+
+            document.getElementById('compositeListContainer').addEventListener('click', function(event){
+                if(event.target && event.target.classList.contains('manage-composite-tensile-btn')){
+                    currentSelectedCompositeId = event.target.dataset.compositeid;
+                    currentSelectedCompositeName = event.target.dataset.compositename;
+                    document.getElementById('selectedCompositeNameTensile').textContent = currentSelectedCompositeName;
+                    document.getElementById('addNewCompositeTensileBtn').classList.remove('hidden');
+                    fetchAndDisplayCompositeTensileProperties();
+                }
+            });
+        }
+
+        function fetchAndDisplayCompositeTensileProperties() {
+             if (!currentSelectedCompositeId) {
+                 setTableContainerMessage(document.getElementById('compositeTensileTableContainer'), 'nodata', 6);
+                 document.getElementById('compositeTensileTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select a composite to manage its tensile properties.</p>';
+                 document.getElementById('addNewCompositeTensileBtn').classList.add('hidden');
+                return;
+            }
+            const config = {
+                containerId: 'compositeTensileTableContainer',
+                apiUrl: `/api/composites/${currentSelectedCompositeId}/tensile_properties`,
+                columns: [
+                    { header: 'Test ID', field: 'TestID' }, { header: 'Method/Standard', field: 'TestMethod_Standard' },
+                    { header: 'Direction', field: 'TestDirection' }, { header: 'Strength (MPa)', field: 'TensileStrength', renderFunc: val => decimal_to_str_or_none(val) },
+                    { header: 'Modulus (GPa)', field: 'TensileModulus', renderFunc: val => decimal_to_str_or_none(val) }
+                ],
+                pkField: 'TestID',
+                entityNameFriendly: 'Composite Tensile Property',
+                parentIdFieldName: 'CompositeID',
+                parentItemId: currentSelectedCompositeId,
+                addNewButtonId: 'addNewCompositeTensileBtn',
+                modalConfig: {
+                    propertyKey: 'CompositeTensile', modelName: 'Composite_Tensile_Properties',
+                    apiRouteName: `composites/${currentSelectedCompositeId}/tensile_properties`,
+                    formFields: compositeTensileFormFields, title: 'Composite Tensile Property',
+                    parentIdFieldName: 'CompositeID',
+                    modalElementId: 'CompositeTensileModal', modalContentElementId: 'CompositeTensileModalContent'
+                },
+                callbackAfterAction: fetchAndDisplayCompositeTensileProperties
+            };
+            fetchAndDisplayRelatedProperties(config);
+        }
+
+        // --- Ballistic Performance Module ---
+        const endProductFormFields = [
+            { name: 'ProductName', label: 'Product Name', type: 'text', required: true },
+            { name: 'Manufacturer', label: 'Manufacturer', type: 'text' },
+            { name: 'ProductType', label: 'Product Type (e.g., Vest, Helmet, Plate)', type: 'text' },
+            { name: 'ProtectionLevel_Claimed', label: 'Protection Level Claimed', type: 'text' },
+            { name: 'StructureDescription_ArealDensity', label: 'Structure Description / Areal Density (kg/m^2)', type: 'textarea', rows:3, colSpan:2 },
+            { name: 'Application', label: 'Application (e.g., Military, Police)', type: 'text' },
+            { name: 'FiberID', label: 'Primary Fiber (if known)', type: 'select', optionsUrl: '/api/fibers', optionValue: 'FiberID', optionTextFields: ['FiberName'], required: false },
+            { name: 'CompositeID', label: 'Primary Composite (if known)', type: 'select', optionsUrl: '/api/composites', optionValue: 'CompositeID', optionTextFields: ['CompositeName'], required: false },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+        const ballisticTestFormFields = [
+            { name: 'TestStandard_Lab', label: 'Test Standard / Lab', type: 'text', required: true },
+            { name: 'TestDate', label: 'Test Date', type: 'date' },
+            { name: 'ProjectileType', label: 'Projectile Type', type: 'text', required: true },
+            { name: 'ProjectileVelocity_mps', label: 'Projectile Velocity (m/s)', type: 'number', step: 'any' },
+            { name: 'V50_mps', label: 'V50 (m/s)', type: 'number', step: 'any' },
+            { name: 'BackfaceDeformation_mm', label: 'Backface Deformation (mm)', type: 'number', step: 'any' },
+            { name: 'PenetrationResult', label: 'Penetration Result', type: 'select', options: ['Complete Penetration', 'Partial Penetration', 'No Penetration', 'Ricochet'], required: true },
+            { name: 'NumberOfShots', label: 'Number of Shots', type: 'number', step: 1 },
+            { name: 'ShotDistribution', label: 'Shot Distribution Pattern', type: 'text' },
+            { name: 'TargetObliquity_deg', label: 'Target Obliquity (°)', type: 'number', step: 'any', defaultValue: 0 },
+            { name: 'ConditioningDetails', label: 'Conditioning (Temp, Humidity)', type: 'text' },
+            { name: 'WitnessPlateMaterial', label: 'Witness Plate Material', type: 'text' },
+            { name: 'FailureAnalysis', label: 'Failure Analysis/Observations', type: 'textarea', rows: 4, colSpan: 2 },
+            { name: 'Notes', label: 'Notes', type: 'textarea', rows: 3, colSpan: 2 }
+        ];
+
+        function setupBallisticPerformanceModule() {
+            contentArea.innerHTML = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="md:col-span-1 bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">End Products</h3>
+                            <button id="addNewEndProductBtn" class="action-button text-sm">Add End Product</button>
+                        </div>
+                        <div id="endProductListContainer"></div>
+                    </div>
+                    <div class="md:col-span-2 bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-xl font-semibold">Ballistic Tests for <span id="selectedEndProductNameTest" class="text-blue-600">N/A</span></h3>
+                            <button id="addNewBallisticTestBtn" class="sub-action-button hidden">Add Ballistic Test</button>
+                        </div>
+                        <div id="ballisticTestTableContainer">
+                            <p class="text-center text-gray-500 py-4">Select an end product to view its ballistic tests.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="EndProductModal" class="modal hidden"><div id="EndProductModalContent" class="modal-content max-w-3xl"></div></div>
+                <div id="BallisticTestModal" class="modal hidden"><div id="BallisticTestModalContent" class="modal-content max-w-3xl"></div></div>`;
+
+            const endProductTableConfig = {
+                containerId: 'endProductListContainer',
+                apiUrl: '/api/end_products', // Assuming this API exists
+                columns: [
+                    { header: 'ID', field: 'ProductID' }, // Assuming ProductID is PK
+                    { header: 'Name', field: 'ProductName', renderFunc: val => `<span class="font-semibold">${val}</span>` },
+                    { header: 'Type', field: 'ProductType' },
+                    { header: 'Protection Level', field: 'ProtectionLevel_Claimed' },
+                    { header: 'Actions', field: 'ProductID', renderFunc: (id, item) => `<button class="sub-action-button text-xs manage-ballistic-tests-btn" data-productid="${id}" data-productname="${item.ProductName}">Manage Tests</button>` }
+                ],
+                actions: [
+                    { label: 'Edit', class: 'action-link-edit ml-0', onClick: (id, item, config) => openPropertyCrudModal(config.modalConfig.key, config.modalConfig.modelName, null, config.modalConfig.apiRouteName, config.modalConfig.formFields, config.modalConfig.title, null, item, config.pkField, null, config.modalConfig.modalId, config.modalConfig.contentId, config.onAddCallback) },
+                    { label: 'Delete', class: 'action-link-delete', onClick: async (id, item, config) => {
+                        if (confirm(`Are you sure you want to delete End Product "${item.ProductName}"?`)) {
+                            try {
+                                await apiFetch(`/api/end_products/${id}`, { method: 'DELETE' });
+                                showUIMessage('End Product deleted.', 'success');
+                                renderMainEntityTable(config);
+                                currentSelectedProductId = null;
+                                document.getElementById('selectedEndProductNameTest').textContent = 'N/A';
+                                setTableContainerMessage(document.getElementById('ballisticTestTableContainer'), 'nodata', 5); // Adjust col count
+                            } catch (error) { /* Handled */ }
+                        }
+                    }}
+                ],
+                pkField: 'ProductID', // Assuming ProductID is PK for EndProduct model
+                entityNameFriendly: 'End Product',
+                addNewButtonId: 'addNewEndProductBtn',
+                modalConfig: {
+                    key: 'EndProduct', modelName: 'EndProduct', apiRouteName: 'end_products',
+                    formFields: endProductFormFields, title: 'End Product',
+                    modalId: 'EndProductModal', contentId: 'EndProductModalContent'
+                }
+            };
+            renderMainEntityTable(endProductTableConfig);
+
+            document.getElementById('endProductListContainer').addEventListener('click', function(event){
+                if(event.target && event.target.classList.contains('manage-ballistic-tests-btn')){
+                    currentSelectedProductId = event.target.dataset.productid;
+                    currentSelectedProductName = event.target.dataset.productname;
+                    document.getElementById('selectedEndProductNameTest').textContent = currentSelectedProductName;
+                    document.getElementById('addNewBallisticTestBtn').classList.remove('hidden');
+                    fetchAndDisplayBallisticTests();
+                }
+            });
+        }
+
+        function fetchAndDisplayBallisticTests() {
+            if (!currentSelectedProductId) {
+                 setTableContainerMessage(document.getElementById('ballisticTestTableContainer'), 'nodata', 6); // Adjust col count
+                 document.getElementById('ballisticTestTableContainer').innerHTML = '<p class="text-center text-gray-500 py-4">Select an End Product to manage its ballistic tests.</p>';
+                 document.getElementById('addNewBallisticTestBtn').classList.add('hidden');
+                return;
+            }
+            const config = {
+                containerId: 'ballisticTestTableContainer',
+                apiUrl: `/api/end_products/${currentSelectedProductId}/ballistic_tests`, // Assuming this API structure
+                columns: [
+                    { header: 'Test ID', field: 'TestID' }, { header: 'Standard/Lab', field: 'TestStandard_Lab' },
+                    { header: 'Projectile', field: 'ProjectileType' }, { header: 'V50 (m/s)', field: 'V50_mps', renderFunc: val => decimal_to_str_or_none(val) },
+                    { header: 'Result', field: 'PenetrationResult' }
+                ],
+                pkField: 'TestID',
+                entityNameFriendly: 'Ballistic Test',
+                parentIdFieldName: 'ProductID', // Assuming foreign key to EndProduct
+                parentItemId: currentSelectedProductId,
+                addNewButtonId: 'addNewBallisticTestBtn',
+                modalConfig: {
+                    propertyKey: 'BallisticTest', modelName: 'BallisticTest', // Assuming BallisticTest model name
+                    apiRouteName: `end_products/${currentSelectedProductId}/ballistic_tests`,
+                    formFields: ballisticTestFormFields, title: 'Ballistic Test Record',
+                    parentIdFieldName: 'ProductID',
+                    modalElementId: 'BallisticTestModal', modalContentElementId: 'BallisticTestModalContent'
+                },
+                callbackAfterAction: fetchAndDisplayBallisticTests
+            };
+            fetchAndDisplayRelatedProperties(config);
+        }
+        function setupSystemGuideModule() { /* ... */ }
+
+        // --- Generic Property CRUD Functions ---
+        async function openPropertyCrudModal(propertyKey, modelClassOrName, toDictFunc, apiRouteName, formFields, modalTitleText, parentItemId, existingData = null, pkName = 'TestID', parentIdFieldName = null, specificModalId = null, specificModalContentId = null, callbackOnSuccess = null) {
+            const modalId = specificModalId || `${propertyKey.toLowerCase()}Modal`;
+            const formId = `${propertyKey.toLowerCase()}Form`;
+            const modalElement = document.getElementById(modalId);
+            const modalContentElement = document.getElementById(specificModalContentId || `${modalId}Content`);
+
+            if (!modalElement || !modalContentElement) {
+                console.error(`Modal or modal content not found for ${propertyKey} (IDs: ${modalId}, ${specificModalContentId || `${modalId}Content`})`);
+                showUIMessage(`UI Error: Modal for ${propertyKey} is missing.`, 'error');
+                return;
+            }
+
+            let formHTML = `<form id="${formId}"><input type="hidden" name="${pkName}" value="${existingData && existingData[pkName] ? existingData[pkName] : ''}">`;
+            if (parentIdFieldName && parentItemId !== null) {
+                formHTML += `<input type="hidden" name="${parentIdFieldName}" value="${parentItemId}">`;
+            }
+
+            let fieldGridClass = "grid-cols-1 md:grid-cols-2";
+            if (formFields.length > 8) fieldGridClass = "grid-cols-1 md:grid-cols-2 lg:grid-cols-3";
+            if (formFields.length <= 4) fieldGridClass = "grid-cols-1";
+            formHTML += `<div class="grid ${fieldGridClass} gap-x-6 gap-y-4">`;
+
+            for (const field of formFields) {
+                if (field.name === pkName || (parentIdFieldName && field.name === parentIdFieldName)) continue;
+
+                const requiredSpan = field.required ? '<span class="text-red-500">*</span>' : '';
+                const currentVal = existingData && existingData[field.name] !== null && existingData[field.name] !== undefined ? existingData[field.name] : '';
+
+                formHTML += `<div class="md:col-span-${field.colSpan || 1}">
+                                <label for="${propertyKey}${field.name}" class="block text-sm font-medium text-gray-700">${field.label} ${requiredSpan}</label>`;
+                if (field.type === 'select') {
+                    formHTML += `<select id="${propertyKey}${field.name}" name="${field.name}" class="select-class" ${field.required ? 'required' : ''}>`;
+                    formHTML += `</select>`; // Options populated later
+                } else if (field.type === 'textarea') {
+                    formHTML += `<textarea id="${propertyKey}${field.name}" name="${field.name}" rows="${field.rows || 3}" class="textarea-class">${currentVal}</textarea>`;
+                } else if (field.type === 'checkbox') {
+                     formHTML += `<input type="checkbox" id="${propertyKey}${field.name}" name="${field.name}" class="checkbox-class" ${currentVal ? 'checked' : ''}>`;
+                } else {
+                    const inputType = field.type === 'number' ? 'number' : (field.type === 'date' ? 'date' : (field.type === 'password' ? 'password' : 'text'));
+                    const step = field.type === 'number' ? (field.step || 'any') : '';
+                    const val = (field.type === 'date' && currentVal) ? safe_isoformat(currentVal) : currentVal;
+                    const placeholder = field.type === 'password' && existingData ? 'Leave blank to keep current' : (field.placeholder || '');
+                    formHTML += `<input type="${inputType}" ${step} id="${propertyKey}${field.name}" name="${field.name}" value="${val}" placeholder="${placeholder}" class="input-class" ${field.required ? 'required' : ''}>`;
+                }
+                formHTML += `</div>`;
+            }
+            formHTML += `</div>`;
+            formHTML += `<div class="flex justify-end space-x-3 mt-8">
+                            <button type="button" id="cancel${propertyKey}ModalBtn" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg border border-gray-300">Cancel</button>
+                            <button type="submit" class="action-button">Save ${propertyKey}</button>
+                         </div></form>`;
+
+            modalContentElement.innerHTML = `
+                <div class="flex justify-between items-center mb-6">
+                    <h2 id="${propertyKey}ModalTitle" class="text-2xl font-bold text-gray-800">${existingData ? 'Edit' : 'Add'} ${modalTitleText}</h2>
+                    <button id="close${propertyKey}ModalBtn" class="text-gray-600 hover:text-gray-800 text-2xl">&times;</button>
+                </div>
+                ${formHTML}`;
+
+            // Populate select dropdowns if any (must happen after form HTML is in DOM)
+            for (const field of formFields) {
+                if (field.type === 'select') {
+                    const selectElement = modalContentElement.querySelector(`select[name="${field.name}"]`);
+                    if (field.optionsUrl) {
+                        await populateSelectDropdown(selectElement, field.optionsUrl, field.optionValue, field.optionTextFields, `Select ${field.label}`, existingData ? existingData[field.name] : null);
+                    } else if (field.options) {
+                        selectElement.innerHTML = `<option value="">Select ${field.label}</option>`;
+                        field.options.forEach(opt => {
+                            const option = document.createElement('option');
+                            const optValue = typeof opt === 'object' ? opt.value : opt;
+                            const optText = typeof opt === 'object' ? opt.text : opt;
+                            option.value = optValue;
+                            option.textContent = optText;
+                            if (existingData && String(existingData[field.name]) === String(optValue)) {
+                                option.selected = true;
+                            }
+                            selectElement.appendChild(option);
+                        });
+                         if (existingData && existingData[field.name] !== null && existingData[field.name] !== undefined) { // Ensure pre-selection for static options
+                            selectElement.value = String(existingData[field.name]);
+                        }
+                    }
+                }
+            }
+
+            modalContentElement.querySelector(`#close${propertyKey}ModalBtn`).addEventListener('click', () => closeModal(modalElement, modalContentElement));
+            modalContentElement.querySelector(`#cancel${propertyKey}ModalBtn`).addEventListener('click', () => closeModal(modalElement, modalContentElement));
+            document.getElementById(formId).addEventListener('submit', (e) => handlePropertyFormSubmit(
+                e, propertyKey, modelClassOrName, toDictFunc, apiRouteName, formFields, modalElement, modalContentElement, parentItemId, pkName, parentIdFieldName, callbackOnSuccess
+            ));
+
+            openModal(modalElement, modalContentElement);
+        }
+
+        async function handlePropertyFormSubmit(event, propertyKey, modelClassOrName, toDictFunc, apiRouteName, formFieldsConfig, modalElement, modalContentElement, parentItemId, pkName, parentIdFieldName, callbackOnSuccess) {
+            event.preventDefault();
+            const form = event.target;
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData.entries());
+            const recordId = data[pkName];
+
+            // Handle checkbox values (FormData only includes them if checked)
+            formFieldsConfig.forEach(field => {
+                if (field.type === 'checkbox') {
+                    data[field.name] = form.elements[field.name] ? form.elements[field.name].checked : false;
+                } else if (field.type === 'date' && data[field.name]) {
+                    data[field.name] = new Date(data[field.name]).toISOString();
+                } else if (field.type === 'date' && !data[field.name]) {
+                    data[field.name] = null;
+                } else if (field.type === 'number' && data[field.name] === '') {
+                    data[field.name] = null;
+                } else if (field.type === 'password' && data[field.name] === '' && recordId) { // For edit user, if password blank, don't send
+                    delete data[field.name];
+                }
+            });
+
+            const method = recordId ? 'PUT' : 'POST';
+            let url;
+            if (recordId) { // Update
+                url = `/api/${apiRouteName}/${recordId}`;
+            } else { // Create
+                if (parentIdFieldName && parentItemId !== null) { // Child property
+                    url = `/api/${apiRouteName.split('/')[0]}/${parentItemId}/${apiRouteName.split('/').pop()}`; // e.g. /api/fibers/123/molecular_weights
+                } else { // Top-level entity
+                    url = `/api/${apiRouteName}`;
+                }
+            }
+
+            try {
+                await apiFetch(url, { method, body: data });
+                showUIMessage(`${propertyKey} data ${recordId ? 'updated' : 'added'}!`, 'success');
+                closeModal(modalElement, modalContentElement);
+                if (callbackOnSuccess) callbackOnSuccess();
+            } catch (error) { /* Error shown by apiFetch */ }
+        }
+        // Other generic functions: fetchAndDisplayRelatedProperties, renderRelatedPropertiesTable, etc.
+        // ... (assumed to be complete enough from previous steps, or would be refactored similarly if issues arise)
+
+
+        // --- Form Field Configurations ---
+        // ... (all previous xxxFormFields arrays) ...
+        const userFormFields = [ /* ... as defined before, with IsActive as checkbox type ... */ ];
+        const roleFormFields = [ /* ... as defined before ... */ ];
+        // const endProductFormFields = [ /* ... as defined before ... */ ]; // Assuming this was for a different module
+        // const ballisticTestFormFields = [ /* ... as defined before, with PenetrationResult options ... */ ]; // Assuming this was for a different module
+
+        const systemHelpDocFormFields = [
+            { name: 'Topic', label: 'Topic', type: 'text', required: true, colSpan: 2 },
+            { name: 'Content', label: 'Content (HTML allowed)', type: 'textarea', rows: 15, required: true, colSpan: 2 }
+            // AddedByUserID will be set by backend if needed based on session
+        ];
+
+        // START - User Management Module JavaScript
+        function setupUserManagementModule() {
+            const userManagementLink = document.querySelector(`button.sidebar-link[data-module="user_management"]`);
+            if (!currentUser || currentUser.RoleName !== 'Administrator') {
+                contentArea.innerHTML = `<div class="p-4 bg-red-100 text-red-700 rounded-md">Access Denied: You do not have permission to manage users and roles.</div>`;
+                if (userManagementLink) userManagementLink.classList.add('hidden');
+                return;
+            }
+            if (userManagementLink) userManagementLink.classList.remove('hidden');
+
+            contentArea.innerHTML = `
+                <div class="module-description">
+                    管理系统用户账户和角色权限。只有管理员可以访问此模块。
+                </div>
+                <div id="userManagementContainer">
+                    <!-- Users Section -->
+                    <div class="mb-12 p-6 bg-white rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-semibold text-gray-800">用户列表</h2>
+                            <button id="addNewUserBtn" class="action-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                添加新用户
+                            </button>
+                        </div>
+                        <div id="usersTableContainer" class="overflow-x-auto"></div>
+                    </div>
+
+                    <!-- Roles Section -->
+                    <div class="p-6 bg-white rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-6">
+                            <h2 class="text-2xl font-semibold text-gray-800">角色列表</h2>
+                            <button id="addNewRoleBtn" class="action-button">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-5 h-5 mr-2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                添加新角色
+                            </button>
+                        </div>
+                        <div id="rolesTableContainer" class="overflow-x-auto"></div>
+                    </div>
+                </div>
+                <div id="UserModal" class="modal hidden"><div id="UserModalContent" class="modal-content max-w-2xl"></div></div>
+                <div id="RoleModal" class="modal hidden"><div id="RoleModalContent" class="modal-content max-w-lg"></div></div>
+            `;
+
+            // Initialize containers for tables first
+            const usersTableContainer = document.getElementById('usersTableContainer');
+            const rolesTableContainer = document.getElementById('rolesTableContainer');
+
+            fetchAndDisplayUsers(usersTableContainer);
+            fetchAndDisplayRoles(rolesTableContainer);
+
+            document.getElementById('addNewUserBtn').addEventListener('click', () => {
+                openPropertyCrudModal('User', 'User', userToDict, 'users', userFormFields, 'User', null, null, 'UserID', null, 'UserModal', 'UserModalContent', () => fetchAndDisplayUsers(usersTableContainer));
+            });
+            document.getElementById('addNewRoleBtn').addEventListener('click', () => {
+                openPropertyCrudModal('Role', 'Role', roleToDict, 'roles', roleFormFields, 'Role', null, null, 'RoleID', null, 'RoleModal', 'RoleModalContent', () => fetchAndDisplayRoles(rolesTableContainer));
+            });
+        }
+
+        async function fetchAndDisplayUsers(container) {
+            if (!container) container = document.getElementById('usersTableContainer'); // Default if not passed
+            const userTableColumns = 7; // UserID, Username, Email, FullName, Role, Active, Actions
+            setTableContainerMessage(container, 'loading', userTableColumns);
+
+            try {
+                const users = await apiFetch('/api/users');
+                if (!users || users.length === 0) {
+                    setTableContainerMessage(container, 'nodata', userTableColumns);
+                    return;
+                }
+
+                let tableHTML = `<table class="data-table w-full"><thead><tr>
+                    <th>UserID</th><th>Username</th><th>Email</th><th>Full Name</th><th>Role</th><th>Active</th><th>Actions</th>
+                </tr></thead><tbody>`;
+
+                users.forEach(user => {
+                    tableHTML += `<tr>
+                        <td>${user.UserID}</td>
+                        <td>${user.Username}</td>
+                        <td>${user.Email}</td>
+                        <td>${user.FirstName || ''} ${user.LastName || ''}</td>
+                        <td>${user.RoleName || 'N/A'}</td>
+                        <td>${user.IsActive ? 'Yes' : 'No'}</td>
+                        <td>
+                            <button class="action-link-edit" data-userid="${user.UserID}">Edit</button>
+                            <button class="action-link-delete" data-userid="${user.UserID}">Delete</button>
+                        </td>
+                    </tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+                container.innerHTML = tableHTML;
+
+                container.querySelectorAll('.action-link-edit').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const userId = e.target.dataset.userid;
+                        const userToEdit = await apiFetch(`/api/users/${userId}`);
+                        openPropertyCrudModal('User', 'User', userToDict, 'users', userFormFields, 'User', null, userToEdit, 'UserID', null, 'UserModal', 'UserModalContent', () => fetchAndDisplayUsers(container));
+                    });
+                });
+                container.querySelectorAll('.action-link-delete').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const userId = e.target.dataset.userid;
+                        if (confirm(`Are you sure you want to delete user ID ${userId}?`)) {
+                            try {
+                                await apiFetch(`/api/users/${userId}`, { method: 'DELETE' });
+                                showUIMessage('User deleted successfully.', 'success');
+                                fetchAndDisplayUsers(container);
+                            } catch (err) { /* Handled by apiFetch */ }
+                        }
+                    });
+                });
+            } catch (error) {
+                setTableContainerMessage(container, 'error', userTableColumns);
+            }
+        }
+
+        async function fetchAndDisplayRoles(container) {
+            if (!container) container = document.getElementById('rolesTableContainer');
+            const roleTableColumns = 4; // RoleID, RoleName, Description, Actions
+            setTableContainerMessage(container, 'loading', roleTableColumns);
+            try {
+                const roles = await apiFetch('/api/roles');
+                 if (!roles || roles.length === 0) {
+                    setTableContainerMessage(container, 'nodata', roleTableColumns);
+                    return;
+                }
+                let tableHTML = `<table class="data-table w-full"><thead><tr>
+                    <th>RoleID</th><th>Role Name</th><th>Description</th><th>Actions</th>
+                </tr></thead><tbody>`;
+                roles.forEach(role => {
+                    tableHTML += `<tr>
+                        <td>${role.RoleID}</td>
+                        <td>${role.RoleName}</td>
+                        <td>${role.Description || ''}</td>
+                        <td>
+                            <button class="action-link-edit" data-roleid="${role.RoleID}">Edit</button>
+                            <button class="action-link-delete" data-roleid="${role.RoleID}">Delete</button>
+                        </td>
+                    </tr>`;
+                });
+                tableHTML += `</tbody></table>`;
+                container.innerHTML = tableHTML;
+
+                container.querySelectorAll('.action-link-edit').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const roleId = e.target.dataset.roleid;
+                        const roleToEdit = await apiFetch(`/api/roles/${roleId}`);
+                        openPropertyCrudModal('Role', 'Role', roleToDict, 'roles', roleFormFields, 'Role', null, roleToEdit, 'RoleID', null, 'RoleModal', 'RoleModalContent', () => fetchAndDisplayRoles(container));
+                    });
+                });
+                 container.querySelectorAll('.action-link-delete').forEach(btn => {
+                    btn.addEventListener('click', async (e) => {
+                        const roleId = e.target.dataset.roleid;
+                        if (confirm(`Are you sure you want to delete role ID ${roleId}?`)) {
+                            try {
+                                await apiFetch(`/api/roles/${roleId}`, { method: 'DELETE' });
+                                showUIMessage('Role deleted successfully.', 'success');
+                                fetchAndDisplayRoles(container);
+                            } catch (err) { /* Handled by apiFetch */ }
+                        }
+                    });
+                });
+            } catch (error) {
+                 setTableContainerMessage(container, 'error', roleTableColumns);
+            }
+        }
+        // END - User Management Module JavaScript
+
+        // START - System Guide Module ---
+        function setupSystemGuideModule() {
+            contentArea.innerHTML = `
+                <div class="module-description">
+                    本模块提供系统操作指南和常见问题解答。管理员可在此处添加、编辑或删除帮助文档。
+                </div>
+                <div class="flex flex-col md:flex-row gap-6">
+                    <div id="helpDocListContainer" class="w-full md:w-1/3 bg-white p-6 rounded-lg shadow">
+                        <div class="flex justify-between items-center mb-4">
+                            <h2 class="text-xl font-semibold text-gray-700">帮助主题</h2>
+                            <button id="addNewHelpDocBtn" class="action-button hidden">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-4 h-4 mr-1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+                                添加
+                            </button>
+                        </div>
+                        <ul id="helpTopicsList" class="space-y-1">
+                            <li class="p-2 text-gray-500">Loading topics...</li>
+                        </ul>
+                    </div>
+                    <div id="helpDocContentAreaContainer" class="w-full md:w-2/3 bg-white p-6 rounded-lg shadow min-h-[400px]">
+                        <div id="helpDocContentArea" class="prose max-w-none">
+                           <p class="text-gray-500">请从左侧选择一个主题以查看内容。</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="HelpDocModal" class="modal hidden"><div id="HelpDocModalContent" class="modal-content max-w-3xl"></div></div>`;
+
+            const addNewHelpDocBtn = document.getElementById('addNewHelpDocBtn');
+            if (currentUser && currentUser.RoleName === 'Administrator') {
+                addNewHelpDocBtn.classList.remove('hidden');
+                addNewHelpDocBtn.addEventListener('click', () => {
+                    openPropertyCrudModal(
+                        'HelpDoc', 'SystemHelpDoc', null, 'system_help_docs',
+                        systemHelpDocFormFields, 'Help Document', null, null,
+                        'DocID', null, 'HelpDocModal', 'HelpDocModalContent', fetchHelpTopics
+                    );
+                });
+            }
+            fetchHelpTopics();
+        }
+
+        async function fetchHelpTopics() {
+            const listElement = document.getElementById('helpTopicsList');
+            const contentDisplayArea = document.getElementById('helpDocContentArea'); // Keep this to set initial message
+            const helpTopicsListColumns = 1; // It's a list, so 1 "column" conceptually
+            setTableContainerMessage(listElement, 'loading', helpTopicsListColumns, true);
+
+            try {
+                const topics = await apiFetch('/api/system_help_docs');
+                if (!topics || topics.length === 0) {
+                    setTableContainerMessage(listElement, 'nodata', helpTopicsListColumns, true);
+                    if(contentDisplayArea) contentDisplayArea.innerHTML = '<p class="text-gray-500">暂无帮助文档。管理员可以添加新的帮助文档。</p>';
+                    return;
+                }
+                listElement.innerHTML = ''; // Clear loading message before adding actual items
+                topics.forEach(doc => {
+                    const listItem = document.createElement('li');
+                    // Added more styling for better visual feedback on clickable items
+                    listItem.innerHTML = `<button class="block w-full text-left px-3 py-2 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-150">${doc.Topic}</button>`;
+                    listItem.querySelector('button').addEventListener('click', (event) => {
+                        document.querySelectorAll('#helpTopicsList button').forEach(btn => btn.classList.remove('bg-blue-100', 'text-blue-700', 'font-semibold'));
+                        event.currentTarget.classList.add('bg-blue-100', 'text-blue-700', 'font-semibold');
+                        displayHelpDocContent(doc);
+                    });
+                    listElement.appendChild(listItem);
+                });
+
+                // Optionally, display the first topic by default if none selected
+                // if (topics.length > 0) { ... } // Current behavior is to not auto-select first.
+            } catch (error) {
+                setTableContainerMessage(listElement, 'error', helpTopicsListColumns, true);
+                console.error("Error fetching help topics:", error);
+            }
+        }
+
+        function displayHelpDocContent(doc) {
+            const contentDisplayArea = document.getElementById('helpDocContentArea');
+            const topicTitleId = 'helpDocTopicTitle'; // For potentially adding a title outside prose
+            const contentBodyId = 'helpDocContentBody';
+
+            let adminControlsHTML = '';
+            if (currentUser && currentUser.RoleName === 'Administrator') {
+                adminControlsHTML = `
+                    <div class="mt-6 pt-4 border-t border-gray-200 flex space-x-3">
+                        <button id="editHelpDocBtn-${doc.DocID}" class="action-button bg-yellow-500 hover:bg-yellow-600 text-sm py-1.5 px-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>Edit
+                        </button>
+                        <button id="deleteHelpDocBtn-${doc.DocID}" class="action-button bg-red-500 hover:bg-red-600 text-sm py-1.5 px-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>Delete
+                        </button>
+                    </div>`;
+            }
+            // Using Tailwind's prose class for basic typography styling of HTML content
+            contentDisplayArea.innerHTML = `
+                <h1 id="${topicTitleId}" class="text-2xl font-bold mb-5 text-gray-800">${doc.Topic}</h1>
+                <div id="${contentBodyId}" class="prose prose-sm sm:prose-base max-w-none text-gray-700">${doc.Content}</div>
+                ${adminControlsHTML}`;
+
+            if (currentUser && currentUser.RoleName === 'Administrator') {
+                const editButton = document.getElementById(`editHelpDocBtn-${doc.DocID}`); // Edit button
+                const deleteButton = document.getElementById(`deleteHelpDocBtn-${doc.DocID}`); // Delete button
+
+                if(editButton) editButton.addEventListener('click', () => { /* ... existing edit logic ... */ });
+                if(deleteButton) deleteButton.addEventListener('click', async () => { /* ... existing delete logic ... */ });
+            }
+        }
+        // END - System Guide Module ---
+
+        // START - Authentication UI & Logic ---
+        const loginHeaderButton = document.getElementById('loginHeaderButton');
+        const registerHeaderButton = document.getElementById('registerHeaderButton');
+        const userInfoDisplay = document.getElementById('userInfoDisplay');
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        const logoutHeaderButton = document.getElementById('logoutHeaderButton');
+
+        const loginModal = document.getElementById('loginModal');
+        const loginModalContent = document.getElementById('loginModalContent');
+        const closeLoginModalButton = document.getElementById('closeLoginModal');
+        const cancelLoginModalButton = document.getElementById('cancelLoginModal');
+        const loginForm = document.getElementById('loginForm');
+        const loginErrorMessages = document.getElementById('loginErrorMessages');
+
+        const registrationModal = document.getElementById('registrationModal');
+        const registrationModalContent = document.getElementById('registrationModalContent');
+        const closeRegistrationModalButton = document.getElementById('closeRegistrationModal');
+        const cancelRegistrationModalButton = document.getElementById('cancelRegistrationModal');
+        const registrationForm = document.getElementById('registrationForm');
+        const registrationErrorMessages = document.getElementById('registrationErrorMessages');
+
+        async function checkAuthStatus() {
+            try {
+                const data = await apiFetch('/api/auth/status');
+                if (data.logged_in && data.user) {
+                    currentUser = data.user; // Assuming data.user includes RoleName
+                    loginHeaderButton.classList.add('hidden');
+                    registerHeaderButton.classList.add('hidden');
+                    userInfoDisplay.classList.remove('hidden');
+                    userInfoDisplay.classList.add('flex');
+                    usernameDisplay.textContent = `Welcome, ${currentUser.Username}`;
+                } else {
+                    currentUser = null;
+                    loginHeaderButton.classList.remove('hidden');
+                    registerHeaderButton.classList.remove('hidden');
+                    userInfoDisplay.classList.add('hidden');
+                    userInfoDisplay.classList.remove('flex');
+                }
+            } catch (error) {
+                console.error("Error checking auth status:", error);
+                currentUser = null;
+                loginHeaderButton.classList.remove('hidden');
+                registerHeaderButton.classList.remove('hidden');
+                userInfoDisplay.classList.add('hidden');
+                userInfoDisplay.classList.remove('flex');
+                // showUIMessage('Could not check authentication status. Please try again later.', 'error'); // Avoid too many messages on load
+            }
+            updateUiForRole(); // Call this regardless of error to set default UI state
+        }
+
+        function updateUiForRole() {
+            const userManagementLink = document.querySelector('button.sidebar-link[data-module="user_management"]');
+            if (userManagementLink) {
+                if (currentUser && currentUser.RoleName === 'Administrator') {
+                    userManagementLink.classList.remove('hidden');
+                } else {
+                    userManagementLink.classList.add('hidden');
+                    // If user is somehow on user_management page and not admin, redirect
+                    if (window.location.hash === '#user_management' || document.querySelector('.sidebar-link.active[data-module="user_management"]')) {
+                        activateModule('home');
+                    }
+                }
+            }
+            // Add more UI adjustments here based on roles if needed in the future
+            // e.g., hide certain "Add New" buttons for non-admin/non-editor roles in other modules.
+        }
+
+        function handleLogout() {
+            apiFetch('/api/auth/logout', { method: 'POST' })
+                .then(() => {
+                    showUIMessage('Logout successful!', 'success');
+                    currentUser = null;
+                    // checkAuthStatus(); // updateUiForRole is called within checkAuthStatus
+                    // activateModule('home'); // activateModule is called within checkAuthStatus via updateUiForRole if hash is user_management
+                    checkAuthStatus(); // This will call updateUiForRole
+                    if(window.location.hash.endsWith('user_management')) { // If on a page they lose access to
+                         activateModule('home');
+                    } else {
+                         activateModule(window.location.hash.substring(1) || 'home'); // Refresh current module or go home
+                    }
+                })
+                .catch(error => {
+                    showUIMessage('Logout failed. Please try again.', 'error');
+                    console.error("Logout error:", error);
+                });
+        }
+
+        function initializeAuthRelatedElements() {
+            loginHeaderButton.addEventListener('click', () => openModal(loginModal, loginModalContent));
+            registerHeaderButton.addEventListener('click', () => openModal(registrationModal, registrationModalContent));
+
+            logoutHeaderButton.addEventListener('click', handleLogout);
+
+            closeLoginModalButton.addEventListener('click', () => closeModal(loginModal, loginModalContent));
+            cancelLoginModalButton.addEventListener('click', () => closeModal(loginModal, loginModalContent));
+
+            closeRegistrationModalButton.addEventListener('click', () => closeModal(registrationModal, registrationModalContent));
+            cancelRegistrationModalButton.addEventListener('click', () => closeModal(registrationModal, registrationModalContent));
+
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                loginErrorMessages.textContent = '';
+                const formData = new FormData(loginForm);
+                const data = Object.fromEntries(formData.entries());
+
+                try {
+                    const response = await apiFetch('/api/auth/login', { method: 'POST', body: data });
+                    showUIMessage('Login successful!', 'success');
+                    closeModal(loginModal, loginModalContent);
+                    loginForm.reset();
+                    await checkAuthStatus(); // Update UI and currentUser
+                    activateModule('home'); // Or redirect to a dashboard view
+                } catch (error) {
+                    loginErrorMessages.textContent = error.message || 'Login failed. Please check your credentials.';
+                    // showUIMessage already called by apiFetch on error
+                }
+            });
+
+            registrationForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                registrationErrorMessages.textContent = '';
+                const formData = new FormData(registrationForm);
+                const data = Object.fromEntries(formData.entries());
+
+                // Basic client-side validation (can be expanded)
+                if (!data.Username || !data.Email || !data.PasswordHash) {
+                    registrationErrorMessages.textContent = 'Username, Email, and Password are required.';
+                    return;
+                }
+
+                try {
+                    // Note: The 'PasswordHash' field from the form contains the plain password.
+                    // The backend /api/users endpoint is responsible for hashing it.
+                    await apiFetch('/api/users', { method: 'POST', body: data });
+                    showUIMessage('Registration successful! Please login.', 'success');
+                    closeModal(registrationModal, registrationModalContent);
+                    registrationForm.reset();
+                    // Optionally, directly call login or prompt user to login
+                } catch (error) {
+                    registrationErrorMessages.textContent = error.message || 'Registration failed. Please try again.';
+                    // showUIMessage already called by apiFetch on error
+                }
+            });
+
+            checkAuthStatus(); // Initial check when page loads
+        }
+        // END - Authentication UI & Logic ---
+
+        // START - Global Search Frontend Logic ---
+        async function handleMainSearch(event) {
+            if (event.key === 'Enter') {
+                const searchTerm = mainSearchInput.value.trim();
+                if (searchTerm.length < 2) {
+                    showUIMessage('Search term must be at least 2 characters long.', 'warning');
+                    return;
+                }
+
+                // Deactivate any active sidebar link as search results are not a module
+                navLinks.forEach(l => l.classList.remove('active'));
+
+                contentArea.innerHTML = '<p class="p-8 text-gray-600 animate-pulse">Searching...</p>'; // Loading state
+
+                try {
+                    // Ensure currentUser is available and has a role that can search if API is protected
+                    if (!currentUser) { // Or check specific roles if search API requires it
+                         showUIMessage('Please login to use search.', 'error');
+                         contentArea.innerHTML = '<p class="p-8 text-red-500">Please login to use search.</p>';
+                         return;
+                    }
+                    const results = await apiFetch(`/api/search?q=${encodeURIComponent(searchTerm)}`);
+                    displaySearchResults(results, searchTerm);
+                } catch (error) {
+                    // apiFetch likely already shows a generic error message via showUIMessage
+                    contentArea.innerHTML = `<div class="p-8 text-red-500">Search failed. ${error.message || 'Please try again.'}</div>`;
+                }
+            }
+        }
+
+        function displaySearchResults(results, searchTerm) {
+            let html = `<div class="bg-white p-6 md:p-8 rounded-xl shadow-xl space-y-6">
+                            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">Search Results for: <span class="text-blue-600">${searchTerm}</span></h1>`;
+
+            if (results.message && results.results && results.results.length === 0) { // Handle specific message from API for short terms
+                 html += `<p class="text-gray-600">${results.message}</p>`;
+            } else if (!results || results.length === 0) {
+                html += '<p class="text-gray-600">No results found.</p>';
+            } else {
+                const groupedResults = results.reduce((acc, item) => {
+                    (acc[item.type] = acc[item.type] || []).push(item);
+                    return acc;
+                }, {});
+
+                for (const type in groupedResults) {
+                    html += `<div class="search-result-group pt-4 mt-4 border-t border-gray-200 first:border-t-0 first:mt-0 first:pt-0">
+                                <h2 class="text-xl md:text-2xl font-semibold text-gray-700 mb-3">${type}s</h2>
+                                <ul class="space-y-3">`;
+                    groupedResults[type].forEach(item => {
+                        // Ensure view_path_hint starts with #, if not, prepend it.
+                        const href = item.view_path_hint ? (item.view_path_hint.startsWith('#') ? item.view_path_hint : `#${item.view_path_hint}`) : '#';
+                        html += `<li class="search-result-item text-gray-800 bg-gray-50 p-3 rounded-md hover:bg-gray-100 transition-colors duration-150">
+                                    <a href="${href}"
+                                       class="font-semibold text-blue-600 hover:text-blue-800 hover:underline text-lg"
+                                       data-item-id="${item.id}"
+                                       data-item-type="${item.type}">
+                                        ${item.label}
+                                    </a>
+                                    ${item.match_context ? `<p class="text-sm text-gray-500 mt-1">${item.match_context}</p>` : ''}
+                                 </li>`;
+                    });
+                    html += `</ul></div>`;
+                }
+            }
+            html += `</div>`;
+            contentArea.innerHTML = html;
+
+            // Attach event listeners to search result links if they need special handling
+            // For now, relying on the href and existing hash change listener
+            document.querySelectorAll('.search-result-item a').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    const path = this.getAttribute('href');
+                    if (path && path.startsWith('#')) {
+                        // The existing hashchange listener in initializePage should handle this
+                        // by calling activateModule based on the new hash.
+                        // No explicit activateModule call needed here unless special parameter passing is required.
+                    }
+                });
+            });
+        }
+        // END - Global Search Frontend Logic ---
+
+        // Sidebar and initial page load
+        sidebarLinks.forEach(link => { /* ... */ });
+        // mainSearchInput.addEventListener('keypress', function(e) { /* ... */ }); // Replaced by below
+        // logoutButton.addEventListener('click', function() { /* ... */ }); // Replaced by logoutHeaderButton listener
+        async function loadDashboardStats() {
+            // Existing stat loading logic...
+            try {
+                const fibers = await apiFetch('/api/fibers');
+                document.getElementById('statTotalFibers').textContent = fibers.length;
+                // Process and render Fiber Grade Chart
+                renderFiberChart(fibers);
+            } catch (e) { document.getElementById('statTotalFibers').textContent = 'Error'; console.error("Error loading fiber stats:", e); }
+
+            try {
+                const resins = await apiFetch('/api/resins'); // Assuming /api/resins for count
+                document.getElementById('statTotalResins').textContent = resins.length;
+            } catch (e) { document.getElementById('statTotalResins').textContent = 'Error'; }
+
+            try {
+                const composites = await apiFetch('/api/composites'); // Assuming /api/composites for count
+                document.getElementById('statTotalComposites').textContent = composites.length;
+            } catch (e) { document.getElementById('statTotalComposites').textContent = 'Error'; }
+
+            try {
+                const literature = await apiFetch('/api/literature_standards');
+                document.getElementById('statTotalLiterature').textContent = literature.length;
+                // Process and render Document Type Chart
+                renderDocumentChart(literature);
+            } catch (e) { document.getElementById('statTotalLiterature').textContent = 'Error'; console.error("Error loading literature stats:", e); }
+        }
+
+        function renderFiberChart(fibers) {
+            const fiberNameCounts = fibers.reduce((acc, fiber) => {
+                // Using FiberName as a proxy for grade. This might need adjustment based on actual data.
+                // If FiberName is too unique, this chart won't be very useful.
+                // Consider a dedicated 'Grade' field or parsing logic if FiberName has a pattern.
+                const name = fiber.FiberName || 'Unknown';
+                acc[name] = (acc[name] || 0) + 1;
+                return acc;
+            }, {});
+
+            const labels = Object.keys(fiberNameCounts);
+            const dataValues = Object.values(fiberNameCounts);
+            const ctx = document.getElementById('fibersByGradeChart')?.getContext('2d');
+            if (!ctx) return;
+
+            if (window.fibersByGradeChartInstance) {
+                window.fibersByGradeChartInstance.destroy();
+            }
+            window.fibersByGradeChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Number of Fibers by Name/Grade',
+                        data: dataValues,
+                        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: { scales: { y: { beginAtZero: true, grace: '5%' } }, responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderDocumentChart(literatureItems) {
+            const docTypeCounts = literatureItems.reduce((acc, item) => {
+                const type = item.DocumentType || 'Unknown';
+                acc[type] = (acc[type] || 0) + 1;
+                return acc;
+            }, {});
+
+            const labels = Object.keys(docTypeCounts);
+            const dataValues = Object.values(docTypeCounts);
+            const ctx = document.getElementById('documentTypesChart')?.getContext('2d');
+            if (!ctx) return;
+
+            if (window.documentTypesChartInstance) {
+                window.documentTypesChartInstance.destroy();
+            }
+            window.documentTypesChartInstance = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Document Types',
+                        data: dataValues,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.7)', 'rgba(54, 162, 235, 0.7)',
+                            'rgba(255, 206, 86, 0.7)', 'rgba(75, 192, 192, 0.7)',
+                            'rgba(153, 102, 255, 0.7)', 'rgba(255, 159, 64, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)', 'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
+            });
+        }
+
+        function addQuickNavListeners() { /* ... */ }
+        function handleQuickNavLink(e) { /* ... */ }
+        function addLearnMoreListeners() { /* ... */ }
+        function handleLearnMore() { window.location.hash = 'system_guide'; }
+        function handleQuickStart() { mainSearchInput.focus(); }
+
+        function initializePage() {
+            // ... existing initializePage logic ...
+            mainSearchInput.addEventListener('keypress', handleMainSearch); // Setup search input listener
+        }
+        window.addEventListener('hashchange', () => { /* ... */ });
+
+        // Ensure auth elements are initialized before the main page logic that might depend on auth status
+        initializeAuthRelatedElements();
+        initializePage();
+    </script>
+</body>
+</html>
